@@ -39,6 +39,8 @@
 #include "utils.h"
 #include "matrices.h"
 
+#include <iostream>
+
 // Declaração de várias funções utilizadas em main().  Essas estão definidas
 // logo após a definição de main() neste arquivo.
 GLuint BuildTriangles(); // Constrói triângulos para renderização
@@ -115,6 +117,11 @@ float g_CameraDistance = 2.5f; // Distância da câmera para a origem
 // Variável que controla o tipo de projeção utilizada: perspectiva ou ortográfica.
 bool g_UsePerspectiveProjection = true;
 
+glm::vec4 camera_position_c; // Ponto "c", centro da câmera
+glm::vec4 camera_lookat_l; // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+glm::vec4 camera_view_vector; // Vetor "view", sentido para onde a câmera está virada
+glm::vec4 camera_up_vector; // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+
 // Variável que controla se o texto informativo será mostrado na tela.
 bool g_ShowInfoText = true;
 
@@ -143,7 +150,7 @@ int main()
     // Criamos uma janela do sistema operacional, com 800 colunas e 480 linhas
     // de pixels, e com título "INF01047 ...".
     GLFWwindow* window;
-    window = glfwCreateWindow(800, 800, "INF01047 - Seu Cartao - Seu Nome", NULL, NULL);
+    window = glfwCreateWindow(800, 800, "INF01047 - 00274704 - Matheus Alan Bergmann - 00274719 - Henrique Soares Goetz", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -235,6 +242,22 @@ int main()
     glm::mat4 the_model;
     glm::mat4 the_view;
 
+            // Computamos a posição da câmera utilizando coordenadas esféricas.  As
+        // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
+        // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
+        // e ScrollCallback().
+        float r = g_CameraDistance;
+        float y = r*sin(g_CameraPhi);
+        float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
+        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
+
+        // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
+        // Veja slides 165-175 do documento "Aula_08_Sistemas_de_Coordenadas.pdf".
+        camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
+        camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+        camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
+        camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+
     // Ficamos em loop, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -260,22 +283,6 @@ int main()
         // vértices apontados pelo VAO criado pela função BuildTriangles(). Veja
         // comentários detalhados dentro da definição de BuildTriangles().
         glBindVertexArray(vertex_array_object_id);
-
-        // Computamos a posição da câmera utilizando coordenadas esféricas.  As
-        // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
-        // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
-        // e ScrollCallback().
-        float r = g_CameraDistance;
-        float y = r*sin(g_CameraPhi);
-        float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
-
-        // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
-        // Veja slides 165-175 do documento "Aula_08_Sistemas_de_Coordenadas.pdf".
-        glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
-        glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-        glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
-        glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slide 179 do
@@ -320,7 +327,7 @@ int main()
         glUniformMatrix4fv(projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
         // Vamos desenhar 3 instâncias (cópias) do cubo
-        for (int i = 1; i <= 3; ++i)
+        for (int i = 1; i <= 8; ++i)
         {
             // Cada cópia do cubo possui uma matriz de modelagem independente,
             // já que cada cópia estará em uma posição (rotação, escala, ...)
@@ -336,14 +343,15 @@ int main()
                 // *exatamente iguais* a suas coordenadas no espaço do modelo
                 // (Model Coordinates).
                 model = Matrix_Identity();
+                model =  Matrix_Scale(0.5f,0.5f,0.5f);
             }
             else if ( i == 2 )
             {
                 // A segunda cópia do cubo sofrerá um escalamento não-uniforme,
                 // seguido de uma rotação no eixo (1,1,1), e uma translação em Z (nessa ordem!).
-                model = Matrix_Translate(0.0f, 0.0f, -2.0f) // TERCEIRO translação
-                      * Matrix_Rotate(3.141592f / 8.0f, glm::vec4(1.0f,1.0f,1.0f,0.0f)) // SEGUNDO rotação
-                      * Matrix_Scale(2.0f, 0.5f, 0.5f); // PRIMEIRO escala
+                model = Matrix_Translate(-1.0f, 0.5f, -0.80f) // TERCEIRO translação
+                      //* Matrix_Rotate(3.141592f / 8.0f, glm::vec4(1.0f,1.0f,1.0f,0.0f)) // SEGUNDO rotação
+                      * Matrix_Scale(3.0f, 0.75f, 1.0f); // PRIMEIRO escala
             }
             else if ( i == 3 )
             {
@@ -351,18 +359,36 @@ int main()
                 // ordem) seguindo o sistema de ângulos de Euler, e após uma
                 // translação em X. Veja slide 65 do documento
                 // "Aula_07_Transformacoes_Geometricas_3D.pdf".
-                model = Matrix_Translate(-2.0f, 0.0f, 0.0f) // QUARTO translação
-                      * Matrix_Rotate_Z(g_AngleZ)  // TERCEIRO rotação Z de Euler
-                      * Matrix_Rotate_Y(g_AngleY)  // SEGUNDO rotação Y de Euler
-                      * Matrix_Rotate_X(g_AngleX); // PRIMEIRO rotação X de Euler
+                model = Matrix_Translate(-2.0f, 0.0f, 0.0f)
+                      * Matrix_Scale(0.5f,0.5f,0.5f); // QUARTO translação
+                      //* Matrix_Rotate_Z(g_AngleZ)  // TERCEIRO rotação Z de Euler
+                      //* Matrix_Rotate_Y(g_AngleY)  // SEGUNDO rotação Y de Euler
+                      //* Matrix_Rotate_X(g_AngleX); // PRIMEIRO rotação X de Euler
 
                 // Armazenamos as matrizes model, view, e projection do terceiro cubo
                 // para mostrar elas na tela através da função TextRendering_ShowModelViewProjection().
                 the_model = model;
                 the_projection = projection;
                 the_view = view;
-            }
+            }else if(i == 4){
+                model =  Matrix_Scale(0.5f,0.5f,0.5f)
+                        * Matrix_Translate(0.0f,0.0f,-3.25f);
 
+            }else if(i == 5){
+                model =  Matrix_Scale(0.5f,0.5f,0.5f)
+                        * Matrix_Translate(-4.0f,0.0f,-3.25f);
+
+            }else if(i==6){
+                model =  Matrix_Scale(0.2f,1.0f,0.8f)
+                        * Matrix_Translate(-12.0f,1.4f,-1.0f);
+            }else if(i==7){
+                model =  Matrix_Scale(0.7f,0.4f,0.8f)
+                        * Matrix_Translate(-2.6f,2.7f,-1.0f);
+            }
+            else if(i==8){
+                model =  Matrix_Scale(0.3f,0.4f,0.3f)
+                        * Matrix_Translate(-6.0f,3.8f,-2.7f);
+            }
             // Enviamos a matriz "model" para a placa de vídeo (GPU). Veja o
             // arquivo "shader_vertex.glsl", onde esta é efetivamente
             // aplicada em todos os pontos.
@@ -385,7 +411,7 @@ int main()
             // glDrawElements() em http://docs.gl/gl3/glDrawElements.
             glDrawElements(
                 g_VirtualScene["cube_faces"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
-                g_VirtualScene["cube_faces"].num_indices,    // 
+                g_VirtualScene["cube_faces"].num_indices,    //
                 GL_UNSIGNED_INT,
                 (void*)g_VirtualScene["cube_faces"].first_index
             );
@@ -669,30 +695,30 @@ GLuint BuildTriangles()
     // Definimos os índices dos vértices que definem as FACES de um cubo
     // através de 12 triângulos que serão desenhados com o modo de renderização
     // GL_TRIANGLES.
-        0, 1, 2, // triângulo 1 
-        7, 6, 5, // triângulo 2 
-        3, 2, 6, // triângulo 3 
-        4, 0, 3, // triângulo 4 
-        4, 5, 1, // triângulo 5 
-        1, 5, 6, // triângulo 6 
-        0, 2, 3, // triângulo 7 
-        7, 5, 4, // triângulo 8 
-        3, 6, 7, // triângulo 9 
+        0, 1, 2, // triângulo 1
+        7, 6, 5, // triângulo 2
+        3, 2, 6, // triângulo 3
+        4, 0, 3, // triângulo 4
+        4, 5, 1, // triângulo 5
+        1, 5, 6, // triângulo 6
+        0, 2, 3, // triângulo 7
+        7, 5, 4, // triângulo 8
+        3, 6, 7, // triângulo 9
         4, 3, 7, // triângulo 10
         4, 1, 0, // triângulo 11
         1, 6, 2, // triângulo 12
     // Definimos os índices dos vértices que definem as ARESTAS de um cubo
     // através de 12 linhas que serão desenhadas com o modo de renderização
     // GL_LINES.
-        0, 1, // linha 1 
-        1, 2, // linha 2 
-        2, 3, // linha 3 
-        3, 0, // linha 4 
-        0, 4, // linha 5 
-        4, 7, // linha 6 
-        7, 6, // linha 7 
-        6, 2, // linha 8 
-        6, 5, // linha 9 
+        0, 1, // linha 1
+        1, 2, // linha 2
+        2, 3, // linha 3
+        3, 0, // linha 4
+        0, 4, // linha 5
+        4, 7, // linha 6
+        7, 6, // linha 7
+        6, 2, // linha 8
+        6, 5, // linha 9
         5, 4, // linha 10
         5, 1, // linha 11
         7, 3, // linha 12
@@ -977,15 +1003,8 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
     g_CameraTheta -= 0.01f*dx;
     g_CameraPhi   += 0.01f*dy;
 
-    // Em coordenadas esféricas, o ângulo phi deve ficar entre -pi/2 e +pi/2.
-    float phimax = 3.141592f/2;
-    float phimin = -phimax;
-
-    if (g_CameraPhi > phimax)
-        g_CameraPhi = phimax;
-
-    if (g_CameraPhi < phimin)
-        g_CameraPhi = phimin;
+    camera_view_vector = Matrix_Rotate_Y(0.005f*dx) * camera_view_vector;
+    camera_view_vector = Matrix_Rotate_X(0.005f*dy) * camera_view_vector;
 
     // Atualizamos as variáveis globais para armazenar a posição atual do
     // cursor como sendo a última posição conhecida do cursor.
@@ -1040,6 +1059,25 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     if (key == GLFW_KEY_Z && action == GLFW_PRESS)
     {
         g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
+    }
+
+    if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    {
+        camera_position_c = camera_position_c+0.01f*camera_view_vector;
+    }
+    if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    {
+        camera_position_c = camera_position_c-0.01f*camera_view_vector;
+    }
+    if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    {
+        glm::vec4 left = crossproduct(camera_up_vector, camera_view_vector);
+        camera_position_c = camera_position_c+0.01f*left;
+    }
+    if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
+    {
+        glm::vec4 right = crossproduct(camera_view_vector, camera_up_vector);
+        camera_position_c = camera_position_c+0.01f*right;
     }
 
     // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
@@ -1160,7 +1198,7 @@ void TextRendering_ShowFramesPerSecond(GLFWwindow* window)
     if ( ellapsed_seconds > 1.0f )
     {
         numchars = snprintf(buffer, 20, "%.2f fps", ellapsed_frames / ellapsed_seconds);
-    
+
         old_seconds = seconds;
         ellapsed_frames = 0;
     }
