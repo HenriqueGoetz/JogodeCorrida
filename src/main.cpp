@@ -20,6 +20,7 @@
 using namespace std;
 
 GLuint BuildTriangles(); // Constrói triângulos para renderização
+GLuint BuildCar(); // Constrói triângulos para renderização
 GLuint LoadShader_Vertex(const char* filename);   // Carrega um vertex shader
 GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
 void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
@@ -77,37 +78,53 @@ glm::vec4 camera_up_vector; // Vetor "up" fixado para apontar para o "céu" (eit
 
 bool g_ShowInfoText = true;
 
-void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<glm::vec3> &normals, vector<GLushort> &elements) {
-  ifstream in(filename, ios::in);
-  if (!in) { cerr << "Não pode abrir o arquivo: " << filename << endl; exit(1); }
-
-  string line;
-  while (getline(in, line)) {
-    if (line.substr(0,2) == "v ") {
-      istringstream s(line.substr(2));
-      glm::vec4 v; s >> v.x; s >> v.y; s >> v.z; v.w = 1.0f;
-      vertices.push_back(v);
-    }  else if (line.substr(0,2) == "f ") {
-      istringstream s(line.substr(2));
-      GLushort a,b,c;
-      s >> a; s >> b; s >> c;
-      a--; b--; c--;
-      elements.push_back(a); elements.push_back(b); elements.push_back(c);
+void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort> &elements)
+{
+    ifstream in(filename, ios::in);
+    if (!in)
+    {
+        cerr << "Não pode abrir o arquivo: " << filename << endl;
+        exit(1);
     }
-    else if (line[0] == '#') { /* ignorando esta linha */ }
-    else { /* ignoring this line */ }
-  }
 
-  normals.resize(vertices.size(), glm::vec3(0.0, 0.0, 0.0));
-  for (int i = 0; i < elements.size(); i+=3) {
-    GLushort ia = elements[i];
-    GLushort ib = elements[i+1];
-    GLushort ic = elements[i+2];
-    glm::vec3 normal = glm::normalize(glm::cross(
-      glm::vec3(vertices[ib]) - glm::vec3(vertices[ia]),
-      glm::vec3(vertices[ic]) - glm::vec3(vertices[ia])));
-    normals[ia] = normals[ib] = normals[ic] = normal;
-  }
+    string line;
+    while (getline(in, line))
+    {
+        if (line.substr(0,2) == "v ")
+        {
+            istringstream s(line.substr(2));
+            glm::vec4 v;
+            s >> v.x;
+            s >> v.y;
+            s >> v.z;
+            v.w = 1.0f;
+            vertices.push_back(v);
+        }
+        else if (line.substr(0,2) == "f ")
+        {
+            istringstream s(line.substr(2));
+            GLushort a,b,c;
+            s >> a;
+            s >> b;
+            s >> c;
+            a--;
+            b--;
+            c--;
+            elements.push_back(a);
+            elements.push_back(b);
+            elements.push_back(c);
+        }
+        else if (line[0] == '#')
+        {
+            /* ignorando esta linha */
+        }
+        else
+        {
+            /* ignoring this line */
+        }
+    }
+    printf("Worked\n");
+
 }
 
 int main()
@@ -162,7 +179,7 @@ int main()
 
     GLuint program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
 
-    GLuint vertex_array_object_id = BuildTriangles();
+    GLuint vertex_array_object_id = BuildCar();
 
     TextRendering_Init();
 
@@ -177,15 +194,15 @@ int main()
     glm::mat4 the_model;
     glm::mat4 the_view;
 
-        float r = g_CameraDistance;
-        float y = r*sin(g_CameraPhi);
-        float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
+    float r = g_CameraDistance;
+    float y = r*sin(g_CameraPhi);
+    float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
+    float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
 
-        camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
-        camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-        camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
-        camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+    camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
+    camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
+    camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
+    camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 
     while (!glfwWindowShouldClose(window))
     {
@@ -205,105 +222,26 @@ int main()
         float nearplane = -0.1f;  // Posição do "near plane"
         float farplane  = -10.0f; // Posição do "far plane"
 
-        if (g_UsePerspectiveProjection)
-        {
-            float field_of_view = 3.141592 / 3.0f;
-            projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
-        }
-        else
-        {
-            float t = 1.5f*g_CameraDistance/2.5f;
-            float b = -t;
-            float r = t*g_ScreenRatio;
-            float l = -r;
-            projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
-        }
+        float field_of_view = 3.141592 / 3.0f;
+        projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
 
-        glUniformMatrix4fv(view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
-        glUniformMatrix4fv(projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
+        glUniformMatrix4fv(view_uniform, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
+        glm::mat4 model;
 
-        for (int i = 1; i <= 8; ++i)
-        {
-            glm::mat4 model;
+        model = Matrix_Identity();
+        glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-            if (i == 1)
-            {
-                model = Matrix_Identity();
-                model =  Matrix_Scale(0.5f,0.5f,0.5f);
-            }
-            else if ( i == 2 )
-            {
-                model = Matrix_Translate(-1.0f, 0.5f, -0.80f) // TERCEIRO translação
-                      //* Matrix_Rotate(3.141592f / 8.0f, glm::vec4(1.0f,1.0f,1.0f,0.0f)) // SEGUNDO rotação
-                      * Matrix_Scale(3.0f, 0.75f, 1.0f); // PRIMEIRO escala
-            }
-            else if ( i == 3 )
-            {
-                model = Matrix_Translate(-2.0f, 0.0f, 0.0f)
-                      * Matrix_Scale(0.5f,0.5f,0.5f); // QUARTO translação
-                the_model = model;
-                the_projection = projection;
-                the_view = view;
-            }else if(i == 4){
-                model =  Matrix_Scale(0.5f,0.5f,0.5f)
-                        * Matrix_Translate(0.0f,0.0f,-3.25f);
+        glUniform1i(render_as_black_uniform, false);
 
-            }else if(i == 5){
-                model =  Matrix_Scale(0.5f,0.5f,0.5f)
-                        * Matrix_Translate(-4.0f,0.0f,-3.25f);
+        glDrawElements(
+            g_VirtualScene["cube_faces"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
+            g_VirtualScene["cube_faces"].num_indices,    //
+            GL_UNSIGNED_INT,
+            (void*)g_VirtualScene["cube_faces"].first_index
+        );
 
-            }else if(i==6){
-                model =  Matrix_Scale(0.2f,1.0f,0.8f)
-                        * Matrix_Translate(-12.0f,1.4f,-1.0f);
-            }else if(i==7){
-                model =  Matrix_Scale(0.7f,0.4f,0.8f)
-                        * Matrix_Translate(-2.6f,2.7f,-1.0f);
-            }
-            else if(i==8){
-                model =  Matrix_Scale(0.3f,0.4f,0.3f)
-                        * Matrix_Translate(-6.0f,3.8f,-2.7f);
-            }
-            glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-
-            glUniform1i(render_as_black_uniform, false);
-
-            glDrawElements(
-                g_VirtualScene["cube_faces"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
-                g_VirtualScene["cube_faces"].num_indices,    //
-                GL_UNSIGNED_INT,
-                (void*)g_VirtualScene["cube_faces"].first_index
-            );
-
-            // Pedimos para OpenGL desenhar linhas com largura de 4 pixels.
-            glLineWidth(4.0f);
-
-            glDrawElements(
-                g_VirtualScene["axes"].rendering_mode,
-                g_VirtualScene["axes"].num_indices,
-                GL_UNSIGNED_INT,
-                (void*)g_VirtualScene["axes"].first_index
-            );
-
-            glUniform1i(render_as_black_uniform, true);
-
-            glDrawElements(
-                g_VirtualScene["cube_edges"].rendering_mode,
-                g_VirtualScene["cube_edges"].num_indices,
-                GL_UNSIGNED_INT,
-                (void*)g_VirtualScene["cube_edges"].first_index
-            );
-
-            // Desenhamos um ponto de tamanho 15 pixels em cima do terceiro vértice
-            // do terceiro cubo. Este vértice tem coordenada de modelo igual à
-            // (0.5, 0.5, 0.5, 1.0).
-            if ( i == 3 )
-            {
-                glPointSize(15.0f);
-                glDrawArrays(GL_POINTS, 3, 1);
-            }
-        }
-
-        glm::mat4 model = Matrix_Identity();
+        model = Matrix_Identity();
 
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
@@ -332,6 +270,8 @@ int main()
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        cout << "Loop" << endl;
     }
 
     glfwTerminate();
@@ -339,31 +279,119 @@ int main()
     return 0;
 }
 
+
+
+GLuint BuildCar()
+{
+    vector<glm::vec4> vertices;
+    vector<GLushort> elements;
+    char* filename = "../../utilities/Car.obj";
+    load_obj(filename, vertices, elements);
+
+    GLfloat model_coefficients[vertices.size()*4];
+    GLfloat color_coefficients[vertices.size()*4];
+
+    for(int i = 0; i < vertices.size(); i++)
+    {
+        model_coefficients[i*4] = vertices[i][0];
+        model_coefficients[i*4+1] = vertices[i][1];
+        model_coefficients[i*4+2] = vertices[i][2];
+        model_coefficients[i*4+3] = 1;
+
+        cout << model_coefficients[i*4+0] << " " << model_coefficients[i*4+1]<< " "<< model_coefficients[i*4+2]<< " "<< model_coefficients[i*4+3] << endl;
+
+        color_coefficients[i*4] = 0.5;
+        color_coefficients[i*4+1] = 0.5;
+        color_coefficients[i*4+2] = 0.5;
+        color_coefficients[i*4+3] = 1;
+    }
+
+    GLuint indices[elements.size()];
+
+    for(int i = 0; i < elements.size(); i++)
+    {
+        indices[i] = elements[i];
+    }
+
+    GLuint VBO_model_coefficients_id;
+    glGenBuffers(1, &VBO_model_coefficients_id);
+
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+
+    glBindVertexArray(vertex_array_object_id);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
+
+    GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
+    GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnableVertexAttribArray(location);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint VBO_color_coefficients_id;
+    glGenBuffers(1, &VBO_color_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_color_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
+    location = 1; // "(location = 1)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    SceneObject cube_faces;
+    cube_faces.name           = "Cubo (faces coloridas)";
+    cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
+    cube_faces.num_indices    = 36;       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
+
+    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
+    g_VirtualScene["cube_faces"] = cube_faces;
+
+    GLuint indices_id;
+    glGenBuffers(1, &indices_id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
+    glBindVertexArray(0);
+
+    cout << "Finished building" << endl;
+    return vertex_array_object_id;
+}
+
 GLuint BuildTriangles()
 {
-    GLfloat model_coefficients[] = {
-    // Vértices de um cubo
-    //    X      Y     Z     W
+    GLfloat model_coefficients[] =
+    {
+        // Vértices de um cubo
+        //    X      Y     Z     W
         -0.5f,  0.5f,  0.5f, 1.0f, // posição do vértice 0
         -0.5f, -0.5f,  0.5f, 1.0f, // posição do vértice 1
-         0.5f, -0.5f,  0.5f, 1.0f, // posição do vértice 2
-         0.5f,  0.5f,  0.5f, 1.0f, // posição do vértice 3
+        0.5f, -0.5f,  0.5f, 1.0f, // posição do vértice 2
+        0.5f,  0.5f,  0.5f, 1.0f, // posição do vértice 3
         -0.5f,  0.5f, -0.5f, 1.0f, // posição do vértice 4
         -0.5f, -0.5f, -0.5f, 1.0f, // posição do vértice 5
-         0.5f, -0.5f, -0.5f, 1.0f, // posição do vértice 6
-         0.5f,  0.5f, -0.5f, 1.0f, // posição do vértice 7
-    // Vértices para desenhar o eixo X
-    //    X      Y     Z     W
-         0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 8
-         1.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 9
-    // Vértices para desenhar o eixo Y
-    //    X      Y     Z     W
-         0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 10
-         0.0f,  1.0f,  0.0f, 1.0f, // posição do vértice 11
-    // Vértices para desenhar o eixo Z
-    //    X      Y     Z     W
-         0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 12
-         0.0f,  0.0f,  1.0f, 1.0f, // posição do vértice 13
+        0.5f, -0.5f, -0.5f, 1.0f, // posição do vértice 6
+        0.5f,  0.5f, -0.5f, 1.0f, // posição do vértice 7
+        // Vértices para desenhar o eixo X
+        //    X      Y     Z     W
+        0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 8
+        1.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 9
+        // Vértices para desenhar o eixo Y
+        //    X      Y     Z     W
+        0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 10
+        0.0f,  1.0f,  0.0f, 1.0f, // posição do vértice 11
+        // Vértices para desenhar o eixo Z
+        //    X      Y     Z     W
+        0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 12
+        0.0f,  0.0f,  1.0f, 1.0f, // posição do vértice 13
     };
 
     GLuint VBO_model_coefficients_id;
@@ -388,9 +416,10 @@ GLuint BuildTriangles()
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    GLfloat color_coefficients[] = {
-    // Cores dos vértices do cubo
-    //  R     G     B     A
+    GLfloat color_coefficients[] =
+    {
+        // Cores dos vértices do cubo
+        //  R     G     B     A
         1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 0
         1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 1
         0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 2
@@ -399,13 +428,13 @@ GLuint BuildTriangles()
         1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 5
         0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 6
         0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 7
-    // Cores para desenhar o eixo X
+        // Cores para desenhar o eixo X
         1.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 8
         1.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 9
-    // Cores para desenhar o eixo Y
+        // Cores para desenhar o eixo Y
         0.0f, 1.0f, 0.0f, 1.0f, // cor do vértice 10
         0.0f, 1.0f, 0.0f, 1.0f, // cor do vértice 11
-    // Cores para desenhar o eixo Z
+        // Cores para desenhar o eixo Z
         0.0f, 0.0f, 1.0f, 1.0f, // cor do vértice 12
         0.0f, 0.0f, 1.0f, 1.0f, // cor do vértice 13
     };
@@ -420,10 +449,11 @@ GLuint BuildTriangles()
     glEnableVertexAttribArray(location);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    GLuint indices[] = {
-    // Definimos os índices dos vértices que definem as FACES de um cubo
-    // através de 12 triângulos que serão desenhados com o modo de renderização
-    // GL_TRIANGLES.
+    GLuint indices[] =
+    {
+        // Definimos os índices dos vértices que definem as FACES de um cubo
+        // através de 12 triângulos que serão desenhados com o modo de renderização
+        // GL_TRIANGLES.
         0, 1, 2, // triângulo 1
         7, 6, 5, // triângulo 2
         3, 2, 6, // triângulo 3
@@ -436,9 +466,9 @@ GLuint BuildTriangles()
         4, 3, 7, // triângulo 10
         4, 1, 0, // triângulo 11
         1, 6, 2, // triângulo 12
-    // Definimos os índices dos vértices que definem as ARESTAS de um cubo
-    // através de 12 linhas que serão desenhadas com o modo de renderização
-    // GL_LINES.
+        // Definimos os índices dos vértices que definem as ARESTAS de um cubo
+        // através de 12 linhas que serão desenhadas com o modo de renderização
+        // GL_LINES.
         0, 1, // linha 1
         1, 2, // linha 2
         2, 3, // linha 3
@@ -451,9 +481,9 @@ GLuint BuildTriangles()
         5, 4, // linha 10
         5, 1, // linha 11
         7, 3, // linha 12
-    // Definimos os índices dos vértices que definem as linhas dos eixos X, Y,
-    // Z, que serão desenhados com o modo GL_LINES.
-        8 , 9 , // linha 1
+        // Definimos os índices dos vértices que definem as linhas dos eixos X, Y,
+        // Z, que serão desenhados com o modo GL_LINES.
+        8, 9,   // linha 1
         10, 11, // linha 2
         12, 13  // linha 3
     };
@@ -542,10 +572,13 @@ void LoadShader(const char* filename, GLuint shader_id)
     // e colocamos seu conteúdo em memória, apontado pela variável
     // "shader_string".
     std::ifstream file;
-    try {
+    try
+    {
         file.exceptions(std::ifstream::failbit);
         file.open(filename);
-    } catch ( std::exception& e ) {
+    }
+    catch ( std::exception& e )
+    {
         fprintf(stderr, "ERROR: Cannot open file \"%s\".\n", filename);
         std::exit(EXIT_FAILURE);
     }
