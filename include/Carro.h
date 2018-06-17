@@ -19,6 +19,8 @@ class Carro
         glm::mat4 getMatrix();
         void turnRight();
         void turnLeft();
+        glm::vec4 getCameraPosition();
+        glm::vec4 getCameraView();
 
 };
 

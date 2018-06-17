@@ -92,3 +92,14 @@ glm::mat4 Carro::getMatrix()
 {
     return matrix;
 }
+
+glm::vec4 Carro::getCameraPosition(){
+    glm::vec4 result = position;
+    result[1] += 3;
+    result = result -8.0f*ahead;
+    return result;
+}
+
+glm::vec4 Carro::getCameraView(){
+    return ahead;
+}

@@ -222,6 +222,8 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+        camera_position_c = car.getCameraPosition();
+        camera_view_vector = car.getCameraView();
         //           R     G     B     A
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
