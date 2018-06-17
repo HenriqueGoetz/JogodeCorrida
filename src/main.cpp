@@ -140,6 +140,7 @@ void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort
 
 int main()
 {
+    Carro car;
     int success = glfwInit();
     if (!success)
     {
@@ -241,8 +242,7 @@ int main()
         glUniformMatrix4fv(projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
         glm::mat4 model;
 
-        model = Matrix_Identity();
-        model = Matrix_Translate(0,0,5);
+        model = car.getMatrix();
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -261,7 +261,6 @@ int main()
         glUniformMatrix4fv(view_uniform, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
 
-        model = Matrix_Identity();
         model = Matrix_Translate(0,0,5);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 

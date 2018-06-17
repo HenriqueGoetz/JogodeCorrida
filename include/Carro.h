@@ -1,18 +1,19 @@
 #ifndef CARRO_H
 #define CARRO_H
-
+#include <glm/mat4x4.hpp>
 
 class Carro
 {
     private:
-         glm::mat4 matrix = Matrix_Identity();
+         glm::mat4 matrix;
          float speed = 0.5f;
-         double last_time = glfwGetTime();;
+         double last_time;
 
     public:
         Carro();
         virtual ~Carro();
-        moveCarro(double tempoagora);
+        void moveCarro(double tempoagora);
+        glm::mat4 getMatrix();
 
 };
 
