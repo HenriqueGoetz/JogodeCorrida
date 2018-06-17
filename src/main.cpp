@@ -356,6 +356,25 @@ int main()
         );
 
         /////////////
+        //Internas
+
+        glBindVertexArray(vertex_array_object_id4);
+
+        model = Matrix_Identity()
+            *Matrix_Translate(0,0.5,0.5)
+            *Matrix_Scale(10,1,1);
+        glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+
+        glUniform1i(render_as_black_uniform, false);
+
+        glDrawElements(
+            g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
+            g_VirtualScene["cubo"].num_indices,    //
+            GL_UNSIGNED_INT,
+            (void*)g_VirtualScene["cubo"].first_index
+        );
+
+        /////////////
         model = Matrix_Identity();
 
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
@@ -1135,13 +1154,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     }
     if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {
-        glm::vec4 left = crossproduct(camera_up_vector, camera_view_vector);
-        camera_position_c = camera_position_c+0.01f*left;
+        car.turnLeft();
     }
     if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {
-        glm::vec4 right = crossproduct(camera_view_vector, camera_up_vector);
-        camera_position_c = camera_position_c+0.01f*right;
+        car.turnRight();
     }
 
     // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.

@@ -21,6 +21,20 @@ Carro::~Carro()
     //dtor
 }
 
+glm::mat4 matrix_rotate_y(float angle)
+{
+    float c = cos(angle);
+    float s = sin(angle);
+    return glm::mat4(
+        // PREENCHA AQUI A MATRIZ DE ROTAÇÃO (3D) EM TORNO DO EIXO Y EM COORD.
+        // HOMOGÊNEAS, UTILIZANDO OS PARÂMETROS c e s
+        cos(angle) , 0.0f , -sin(angle) , 0.0f ,  // LINHA 1
+        0.0f , 1.0f , 0.0f , 0.0f ,  // LINHA 2
+        sin(angle) , 0.0f , cos(angle) , 0.0f ,  // LINHA 3
+        0.0f , 0.0f , 0.0f , 1.0f    // LINHA 4
+    );
+}
+
 void Carro::moveCarro(double time)
 {
     if(last_time != 0)
@@ -35,6 +49,14 @@ void Carro::moveCarro(double time)
         cout << "Moving" << endl;
     }
     last_time = time;
+}
+
+void Carro::turnRight(){
+    glm::mat4 rotation = matrix_rotate_y(0.3);
+}
+
+void Carro::turnLeft(){
+    cout << "Truning left" << endl;
 }
 
 glm::mat4 Carro::getMatrix()
