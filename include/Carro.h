@@ -9,7 +9,8 @@ class Carro
          glm::mat4 matrix;
          float speed = 0.5f;
          double last_time;
-         glm::vec4 ahead = glm::vec4(0.0,0.0,1.0,1.0);
+         glm::vec4 ahead = glm::vec4(0.0,0.0,1.0,0.0);
+         glm::vec4 position = glm::vec4(0.0,0.0,0.0,1.0);
 
     public:
         Carro();

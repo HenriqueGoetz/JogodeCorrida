@@ -43,16 +43,31 @@ void Carro::moveCarro(double time)
                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
                                     0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    0.0f, 0.0f, 1.0f, 1.0f       // LINHA 4
+                                    ahead[0], ahead[1], ahead[2], 1.0f       // LINHA 4
                                 );
         matrix = (translation) * matrix;
-        cout << "Moving" << endl;
+        position = position + ahead;
+        position[3] = 1;
     }
     last_time = time;
 }
 
 void Carro::turnRight(){
-    glm::mat4 rotation = matrix_rotate_y(0.3);
+    glm::mat4 translation = glm::mat4(
+                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                    -position[0], -position[1], -position[2], 1.0f       // LINHA 4
+                                );
+    glm::mat4 translation2 = glm::mat4(
+                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                    position[0], position[1], position[2], 1.0f       // LINHA 4
+                                );
+    glm::mat4 rotation = matrix_rotate_y(-0.3);
+    matrix = translation2 * rotation * translation* matrix;
+    ahead = matrix * ahead;
 }
 
 void Carro::turnLeft(){
