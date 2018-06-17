@@ -21,6 +21,7 @@ using namespace std;
 
 GLuint BuildTriangles(); // Constrói triângulos para renderização
 GLuint BuildCar(); // Constrói triângulos para renderização
+GLuint BuildChao(); // Constrói triângulos para renderização
 GLuint LoadShader_Vertex(const char* filename);   // Carrega um vertex shader
 GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
 void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
@@ -188,7 +189,7 @@ int main()
 
     GLuint program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
 
-    GLuint vertex_array_object_id = BuildTriangles();
+    GLuint vertex_array_object_id = BuildChao();
 
     TextRendering_Init();
 
@@ -277,7 +278,85 @@ int main()
     return 0;
 }
 
+GLuint BuildChao()
+{
 
+    GLfloat model_coefficients[] =
+    {
+        // Vértices do chao
+        //    X      Y     Z     W
+        5.0f,  -2.0f, 5.0f, 1.0f, // posição do vértice 1
+        -5.0f, -2.0f,  5.0f, 1.0f, // posição do vértice 2
+        5.0f, -2.0f,  -5.0f, 1.0f, // posição do vértice 3
+        -5.0f,  -2.0f,  -5.0f, 1.0f // posição do vértice 4
+    };
+
+    GLfloat color_coefficients[]=
+    {
+        0.5f, 0.5f, 0.5f, 1.0f, // cor do vértice 1
+        0.5f, 0.5f, 0.5f, 1.0f, // cor do vértice 2
+        0.5f, 0.5f, 0.5f, 1.0f, // cor do vértice 3
+        0.5f, 0.5f, 0.5f, 1.0f
+    };
+
+    GLuint indices[]=
+    {
+        0,1,2,1,2,3
+    };
+
+    GLuint VBO_model_coefficients_id;
+    glGenBuffers(1, &VBO_model_coefficients_id);
+
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+
+    glBindVertexArray(vertex_array_object_id);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
+
+    GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
+    GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnableVertexAttribArray(location);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint VBO_color_coefficients_id;
+    glGenBuffers(1, &VBO_color_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_color_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
+    location = 1; // "(location = 1)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    SceneObject cube_faces;
+    cube_faces.name           = "Cubo (faces coloridas)";
+    cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
+    cube_faces.num_indices    = 6;       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
+
+    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
+    g_VirtualScene["cube_faces"] = cube_faces;
+
+    GLuint indices_id;
+    glGenBuffers(1, &indices_id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
+    glBindVertexArray(0);
+
+    cout << "Finished building" << endl;
+    return vertex_array_object_id;
+
+}
 
 GLuint BuildCar()
 {
@@ -361,138 +440,6 @@ GLuint BuildCar()
     glBindVertexArray(0);
 
     cout << "Finished building" << endl;
-    return vertex_array_object_id;
-}
-
-GLuint BuildTriangles()
-{
-    vector<glm::vec4> vertices;
-    vector<GLushort> elements;
-    char* filename = "../../utilities/Car.obj";
-    load_obj(filename, vertices, elements);
-
-    GLfloat model_coefficients[vertices.size()*4];
-    GLfloat color_coefficients[vertices.size()*4];
-    for(int i = 0; i < vertices.size(); i++)
-    {
-        model_coefficients[i*4] = vertices[i][0];
-        model_coefficients[i*4+1] = vertices[i][1];
-        model_coefficients[i*4+2] = vertices[i][2];
-        model_coefficients[i*4+3] = 1;
-
-        color_coefficients[i*4] = 1.0f;
-        color_coefficients[i*4+1] = 0.0f;
-        color_coefficients[i*4+2] = 0.0f;
-        color_coefficients[i*4+3] = 1.0f;
-    }
-
-    GLuint VBO_model_coefficients_id;
-    glGenBuffers(1, &VBO_model_coefficients_id);
-
-    GLuint vertex_array_object_id;
-    glGenVertexArrays(1, &vertex_array_object_id);
-
-    glBindVertexArray(vertex_array_object_id);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
-
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
-
-    GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
-    GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
-    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-
-    glEnableVertexAttribArray(location);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    /*GLfloat color_coefficients[] =
-    {
-        // Cores dos vértices do cubo
-        //  R     G     B     A
-        1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 0
-        1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 1
-        0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 2
-        0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 3
-        1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 4
-        1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 5
-        0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 6
-        0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 7
-        // Cores para desenhar o eixo X
-        1.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 8
-        1.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 9
-        // Cores para desenhar o eixo Y
-        0.0f, 1.0f, 0.0f, 1.0f, // cor do vértice 10
-        0.0f, 1.0f, 0.0f, 1.0f, // cor do vértice 11
-        // Cores para desenhar o eixo Z
-        0.0f, 0.0f, 1.0f, 1.0f, // cor do vértice 12
-        0.0f, 0.0f, 1.0f, 1.0f, // cor do vértice 13
-    };*/
-    GLuint VBO_color_coefficients_id;
-    glGenBuffers(1, &VBO_color_coefficients_id);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_color_coefficients_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
-    location = 1; // "(location = 1)" em "shader_vertex.glsl"
-    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
-    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(location);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    GLuint indices[elements.size()];
-
-    for(int i = 0; i < elements.size(); i++){
-        indices[i] = elements[i];
-        cout << indices[i] << endl;
-    }
-
-    SceneObject cube_faces;
-    cube_faces.name           = "Cubo (faces coloridas)";
-    cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
-    cube_faces.num_indices    = elements.size();       // Último índice está em indices[35]; total de 36 índices.
-    cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
-
-    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
-    g_VirtualScene["cube_faces"] = cube_faces;
-
-    SceneObject cube_edges;
-    cube_edges.name           = "Cubo (arestas pretas)";
-    cube_edges.first_index    = (void*)(36*sizeof(GLuint)); // Primeiro índice está em indices[36]
-    cube_edges.num_indices    = 24; // Último índice está em indices[59]; total de 24 índices.
-    cube_edges.rendering_mode = GL_LINES; // Índices correspondem ao tipo de rasterização GL_LINES.
-
-    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
-    g_VirtualScene["cube_edges"] = cube_edges;
-
-    // Criamos um terceiro objeto virtual (SceneObject) que se refere aos eixos XYZ.
-    SceneObject axes;
-    axes.name           = "Eixos XYZ";
-    axes.first_index    = (void*)(60*sizeof(GLuint)); // Primeiro índice está em indices[60]
-    axes.num_indices    = 6; // Último índice está em indices[65]; total de 6 índices.
-    axes.rendering_mode = GL_LINES; // Índices correspondem ao tipo de rasterização GL_LINES.
-    g_VirtualScene["axes"] = axes;
-
-    // Criamos um buffer OpenGL para armazenar os índices acima
-    GLuint indices_id;
-    glGenBuffers(1, &indices_id);
-
-    // "Ligamos" o buffer. Note que o tipo agora é GL_ELEMENT_ARRAY_BUFFER.
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
-
-    // Alocamos memória para o buffer.
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), NULL, GL_STATIC_DRAW);
-
-    // Copiamos os valores do array indices[] para dentro do buffer.
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
-
-    // "Desligamos" o VAO, evitando assim que operações posteriores venham a
-    // alterar o mesmo. Isso evita bugs.
-    glBindVertexArray(0);
-
-    // Retornamos o ID do VAO. Isso é tudo que será necessário para renderizar
-    // os triângulos definidos acima. Veja a chamada glDrawElements() em main().
     return vertex_array_object_id;
 }
 
