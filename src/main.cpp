@@ -104,7 +104,7 @@ void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort
         {
             istringstream s(line.substr(2));
 
-            GLushort a,b,c;
+            GLushort a,b,c, d;
             char ch;
             int n;
             s >> a;
@@ -116,12 +116,20 @@ void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort
             s >>ch;
             s >> n;
             s >> c;
+            s >> ch;
+            s >>ch;
+            s >> n;
+            s >> d;
             a--;
             b--;
             c--;
+            d--;
             elements.push_back(a);
             elements.push_back(b);
             elements.push_back(c);
+            elements.push_back(a);
+            elements.push_back(c);
+            elements.push_back(d);
         }
     }
     printf("Worked\n");
@@ -180,7 +188,7 @@ int main()
 
     GLuint program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
 
-    GLuint vertex_array_object_id = BuildCar();
+    GLuint vertex_array_object_id = BuildTriangles();
 
     TextRendering_Init();
 
@@ -443,7 +451,7 @@ GLuint BuildTriangles()
     SceneObject cube_faces;
     cube_faces.name           = "Cubo (faces coloridas)";
     cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
-    cube_faces.num_indices    = 36;       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.num_indices    = elements.size();       // Último índice está em indices[35]; total de 36 índices.
     cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
 
     // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
