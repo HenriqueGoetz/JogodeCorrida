@@ -381,7 +381,7 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(0,0.5,9)
+            *Matrix_Translate(0,0.5,9.5)
             *Matrix_Scale(10,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
@@ -398,8 +398,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(-4.5,0.5,4.75)
-            *Matrix_Scale(1,1,7.5);
+            *Matrix_Translate(-4.5,0.5,5)
+            *Matrix_Scale(1,1,8);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -415,8 +415,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(4.5,0.5,4.75)
-            *Matrix_Scale(1,1,7.5);
+            *Matrix_Translate(4.5,0.5,5)
+            *Matrix_Scale(1,1,8);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
