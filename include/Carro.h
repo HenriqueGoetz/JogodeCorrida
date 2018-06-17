@@ -4,19 +4,15 @@
 
 class Carro
 {
-    public:
-         <glm::mat4> matriz = Matrix_Identity();
-         float velocidade = 0.5f;
+    private:
+         glm::mat4 matrix = Matrix_Identity();
+         float speed = 0.5f;
+         double last_time;
 
     public:
         Carro();
         virtual ~Carro();
-
-    public:
-        moveCarro(double tempoagora, double *ultimo){
-            matrix = matriz *
-            (tempoagora-(*ultimotempo)*Matrix_Translate(1.0f,0.0f,0.0f));
-        }
+        moveCarro(double tempoagora);
 
 };
 

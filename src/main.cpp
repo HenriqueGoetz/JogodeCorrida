@@ -16,6 +16,7 @@
 #include "matrices.h"
 #include <iostream>
 #include <vector>
+#include "Carro.h"
 
 using namespace std;
 
