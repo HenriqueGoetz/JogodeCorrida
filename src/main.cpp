@@ -1,4 +1,3 @@
-
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -81,6 +80,8 @@ glm::vec4 camera_up_vector; // Vetor "up" fixado para apontar para o "céu" (eit
 
 bool g_ShowInfoText = true;
 
+Carro car;
+
 void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort> &elements)
 {
     ifstream in(filename, ios::in);
@@ -141,7 +142,6 @@ void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort
 
 int main()
 {
-    Carro car;
     int success = glfwInit();
     if (!success)
     {
@@ -812,7 +812,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 
     if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {
-        camera_position_c = camera_position_c+0.01f*camera_view_vector;
+        car.moveCarro(glfwGetTime());
     }
     if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {
