@@ -487,7 +487,7 @@ GLuint BuildCubo()
     // Vértices para desenhar o eixo Y
     //    X      Y     Z     W
          0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 10
-         0.0f,  1.0f,  0.0f, 1.0f, // posição do vértice 11
+         0.0f,  1.0f,  0.0f, 1.0f, // posição do vértice 110.0f, 0.0f
     // Vértices para desenhar o eixo Z
     //    X      Y     Z     W
          0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 12
@@ -730,18 +730,18 @@ GLuint BuildPista()
 
     GLfloat color_coefficients[]=
     {
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1 // cor do vértice 2
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1 // cor do vértice 3
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1 // cor do vértice 2
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
-        0.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
-        0.0f, 0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1 // cor do vértice 2
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1 // cor do vértice 3
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1 // cor do vértice 2
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1
+        0.2f, 0.2f, 0.2f, 1.0f,
+        0.2f, 0.2f, 0.2f, 1.0f,
+        0.2f, 0.2f, 0.2f, 1.0f, // cor do vértice 1
+        0.2f, 0.2f, 0.2f, 1.0f,
+        0.2f, 0.2f, 0.2f, 1.0f
     };
 
     GLuint indices[]=
