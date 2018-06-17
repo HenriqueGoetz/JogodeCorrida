@@ -8,9 +8,9 @@ using namespace std;
 Carro::Carro()
 {
     matrix = glm::mat4(
-                 1, 0, 0, 0, // COLUNA 1
-                 0, 1, 0, 0, // COLUNA 2
-                 0, 0, 1, 0, // COLUNA 3
+                 0.5f, 0, 0, 0, // COLUNA 1
+                 0, 0.5f, 0, 0, // COLUNA 2
+                 0, 0, 0.5f, 0, // COLUNA 3
                  0, 0, 0, 1  // COLUNA 4
              );;
     last_time = glfwGetTime();
