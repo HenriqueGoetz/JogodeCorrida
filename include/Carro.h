@@ -7,7 +7,7 @@ class Carro
     private:
          glm::mat4 matrix = Matrix_Identity();
          float speed = 0.5f;
-         double last_time;
+         double last_time = glfwGetTime();;
 
     public:
         Carro();
