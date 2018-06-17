@@ -3,7 +3,6 @@
 Carro::Carro()
 {
     //ctor
-
 }
 
 Carro::~Carro()

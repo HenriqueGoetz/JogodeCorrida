@@ -189,7 +189,8 @@ int main()
 
     GLuint program_id = CreateGpuProgram(vertex_shader_id, fragment_shader_id);
 
-    GLuint vertex_array_object_id = BuildChao();
+    GLuint vertex_array_object_id = BuildCar();
+    GLuint vertex_array_object_id2 = BuildChao();
 
     TextRendering_Init();
 
@@ -246,12 +247,31 @@ int main()
         glUniform1i(render_as_black_uniform, false);
 
         glDrawElements(
-            g_VirtualScene["cube_faces"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
-            g_VirtualScene["cube_faces"].num_indices,    //
+            g_VirtualScene["carro"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
+            g_VirtualScene["carro"].num_indices,    //
             GL_UNSIGNED_INT,
-            (void*)g_VirtualScene["cube_faces"].first_index
+            (void*)g_VirtualScene["carro"].first_index
         );
 
+        glBindVertexArray(vertex_array_object_id2);
+
+        projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
+
+        glUniformMatrix4fv(view_uniform, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
+
+        model = Matrix_Identity();
+        model = Matrix_Translate(0,0,5);
+        glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+
+        glUniform1i(render_as_black_uniform, false);
+
+        glDrawElements(
+            g_VirtualScene["chao"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
+            g_VirtualScene["chao"].num_indices,    //
+            GL_UNSIGNED_INT,
+            (void*)g_VirtualScene["chao"].first_index
+        );
         model = Matrix_Identity();
 
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
@@ -285,10 +305,10 @@ GLuint BuildChao()
     {
         // Vértices do chao
         //    X      Y     Z     W
-        5.0f,  -2.0f, 5.0f, 1.0f, // posição do vértice 1
-        -5.0f, -2.0f,  5.0f, 1.0f, // posição do vértice 2
-        5.0f, -2.0f,  -5.0f, 1.0f, // posição do vértice 3
-        -5.0f,  -2.0f,  -5.0f, 1.0f // posição do vértice 4
+        5.0f,  0.0f, 5.0f, 1.0f, // posição do vértice 1
+        -5.0f, 0.0f,  5.0f, 1.0f, // posição do vértice 2
+        5.0f, 0.0f,  -5.0f, 1.0f, // posição do vértice 3
+        -5.0f,  0.0f,  -5.0f, 1.0f // posição do vértice 4
     };
 
     GLfloat color_coefficients[]=
@@ -344,7 +364,7 @@ GLuint BuildChao()
     cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
 
     // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
-    g_VirtualScene["cube_faces"] = cube_faces;
+    g_VirtualScene["chao"] = cube_faces;
 
     GLuint indices_id;
     glGenBuffers(1, &indices_id);
@@ -430,7 +450,7 @@ GLuint BuildCar()
     cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
 
     // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
-    g_VirtualScene["cube_faces"] = cube_faces;
+    g_VirtualScene["carro"] = cube_faces;
 
     GLuint indices_id;
     glGenBuffers(1, &indices_id);
