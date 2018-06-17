@@ -20,8 +20,6 @@ Carro::~Carro()
 
 void Carro::moveCarro(double time){
     glm::mat4 translation = glm::mat4(
-        // PREENCHA AQUI A MATRIZ DE TRANSLAÇÃO (3D) EM COORD. HOMOGÊNEAS
-        // UTILIZANDO OS PARÂMETROS tx, ty e tz
         1.0f , 0.0f , 0.0f , 1 ,  // LINHA 1
         0.0f , 1.0f , 0.0f , 0 ,  // LINHA 2
         0.0f , 0.0f , 1.0f , 0 ,  // LINHA 3

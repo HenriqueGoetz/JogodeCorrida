@@ -23,6 +23,7 @@ using namespace std;
 GLuint BuildTriangles(); // Constrói triângulos para renderização
 GLuint BuildCar(); // Constrói triângulos para renderização
 GLuint BuildChao(); // Constrói triângulos para renderização
+GLuint BuildPista(); // Constrói triângulos para renderização
 GLuint LoadShader_Vertex(const char* filename);   // Carrega um vertex shader
 GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
 void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
@@ -193,6 +194,7 @@ int main()
 
     GLuint vertex_array_object_id = BuildCar();
     GLuint vertex_array_object_id2 = BuildChao();
+    GLuint vertex_array_object_id3 = BuildPista();
 
     TextRendering_Init();
 
@@ -254,6 +256,7 @@ int main()
             (void*)g_VirtualScene["carro"].first_index
         );
 
+
         glBindVertexArray(vertex_array_object_id2);
 
         projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
@@ -271,6 +274,25 @@ int main()
             g_VirtualScene["chao"].num_indices,    //
             GL_UNSIGNED_INT,
             (void*)g_VirtualScene["chao"].first_index
+        );
+
+        glBindVertexArray(vertex_array_object_id3);
+
+        projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
+
+        glUniformMatrix4fv(view_uniform, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
+
+        model = Matrix_Translate(0,0,5);
+        glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+
+        glUniform1i(render_as_black_uniform, false);
+
+        glDrawElements(
+            g_VirtualScene["pista"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
+            g_VirtualScene["pista"].num_indices,    //
+            GL_UNSIGNED_INT,
+            (void*)g_VirtualScene["pista"].first_index
         );
         model = Matrix_Identity();
 
@@ -298,6 +320,103 @@ int main()
     return 0;
 }
 
+GLuint BuildPista()
+{
+
+    GLfloat model_coefficients[] =
+    {
+        // Vértices do chao
+        //    X      Y     Z     W
+        5.0f, 0.1f, 5.0f, 1.0f, // posição do vértice 1
+        9.0f, 0.1f, 5.0f,1.0f,
+        5.0f, 0.1f, -5.0f,1.0f,
+        9.0f, 0.1f, -5.0f,1.0f,
+        -5.0f, 0.1f, 5.0f, 1.0f, // posição do vértice 1
+        -9.0f, 0.1f, 5.0f,1.0f,
+        -5.0f, 0.1f, -5.0f,1.0f,
+        -9.0f, 0.1f, -5.0f,1.0f,
+        9.0f,0.1f,9.0f,1.0f,
+        -9.0f,0.1f,9.0f,1.0f,
+        9.0f,0.1f,-9.0f,1.0f,
+        -9.0f,0.1f,-9.0f,1.0f
+        };
+
+    GLfloat color_coefficients[]=
+    {
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1 // cor do vértice 2
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1 // cor do vértice 3
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1 // cor do vértice 2
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
+        0.0f, 0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 1
+        0.0f, 0.0f, 0.0f, 1.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+
+    GLuint indices[]=
+    {
+        0,1,2,1,2,3,4,5,6,5,6,7,1,8,9,1,9,5,3,10,11,3,11,7
+
+    };
+
+    GLuint VBO_model_coefficients_id;
+    glGenBuffers(1, &VBO_model_coefficients_id);
+
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+
+    glBindVertexArray(vertex_array_object_id);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
+
+    GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
+    GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnableVertexAttribArray(location);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint VBO_color_coefficients_id;
+    glGenBuffers(1, &VBO_color_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_color_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
+    location = 1; // "(location = 1)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    SceneObject cube_faces;
+    cube_faces.name           = "Cubo (faces coloridas)";
+    cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
+    cube_faces.num_indices    = 24;       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
+
+    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
+    g_VirtualScene["pista"] = cube_faces;
+
+    GLuint indices_id;
+    glGenBuffers(1, &indices_id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
+    glBindVertexArray(0);
+
+    cout << "Finished building" << endl;
+    return vertex_array_object_id;
+
+}
+
 GLuint BuildChao()
 {
 
@@ -305,10 +424,10 @@ GLuint BuildChao()
     {
         // Vértices do chao
         //    X      Y     Z     W
-        5.0f,  0.0f, 5.0f, 1.0f, // posição do vértice 1
-        -5.0f, 0.0f,  5.0f, 1.0f, // posição do vértice 2
-        5.0f, 0.0f,  -5.0f, 1.0f, // posição do vértice 3
-        -5.0f,  0.0f,  -5.0f, 1.0f // posição do vértice 4
+        10.0f,  0.0f, 10.0f, 1.0f, // posição do vértice 1
+        -10.0f, 0.0f,  10.0f, 1.0f, // posição do vértice 2
+        10.0f, 0.0f,  -10.0f, 1.0f, // posição do vértice 3
+        -10.0f,  0.0f,  -10.0f, 1.0f // posição do vértice 4
     };
 
     GLfloat color_coefficients[]=
