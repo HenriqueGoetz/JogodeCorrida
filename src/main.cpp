@@ -73,6 +73,8 @@ float g_CameraDistance = 2.5f; // Distância da câmera para a origem
 
 bool g_UsePerspectiveProjection = true;
 
+bool camera_lookat = true;
+
 glm::vec4 camera_position_c; // Ponto "c", centro da câmera
 glm::vec4 camera_lookat_l; // Ponto "l", para onde a câmera (look-at) estará sempre olhando
 glm::vec4 camera_view_vector; // Vetor "view", sentido para onde a câmera está virada
@@ -222,8 +224,10 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
-        camera_position_c = car.getCameraPosition();
-        camera_view_vector = car.getCameraView();
+        if(camera_lookat){
+            camera_position_c = car.getCameraPosition();
+            camera_view_vector = car.getCameraView();
+        }
         //           R     G     B     A
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -1177,20 +1181,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
 
     float delta = 3.141592 / 16; // 22.5 graus, em radianos.
 
-    if (key == GLFW_KEY_X && action == GLFW_PRESS)
-    {
-        g_AngleX += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-
-    if (key == GLFW_KEY_Y && action == GLFW_PRESS)
-    {
-        g_AngleY += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-    if (key == GLFW_KEY_Z && action == GLFW_PRESS)
-    {
-        g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
-    }
-
     if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {
         car.moveCarro(glfwGetTime());
@@ -1208,31 +1198,29 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         car.turnRight();
     }
 
-    // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_C && action == GLFW_PRESS)
     {
-        g_AngleX = 0.0f;
-        g_AngleY = 0.0f;
-        g_AngleZ = 0.0f;
+        camera_lookat = !camera_lookat;
+    }
+    if (key == GLFW_KEY_UP && action == GLFW_PRESS)
+    {
+        camera_position_c += camera_view_vector;
+    }
+    if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+    {
+        camera_position_c -= camera_view_vector;
+    }
+    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+    {
+        glm::mat4 rotation = Matrix_Rotate_Y(0.3);
+        camera_view_vector = rotation * camera_view_vector;
+    }
+    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+    {
+        glm::mat4 rotation = Matrix_Rotate_Y(-0.3);
+        camera_view_vector = rotation * camera_view_vector;
     }
 
-    // Se o usuário apertar a tecla P, utilizamos projeção perspectiva.
-    if (key == GLFW_KEY_P && action == GLFW_PRESS)
-    {
-        g_UsePerspectiveProjection = true;
-    }
-
-    // Se o usuário apertar a tecla O, utilizamos projeção ortográfica.
-    if (key == GLFW_KEY_O && action == GLFW_PRESS)
-    {
-        g_UsePerspectiveProjection = false;
-    }
-
-    // Se o usuário apertar a tecla H, fazemos um "toggle" do texto informativo mostrado na tela.
-    if (key == GLFW_KEY_H && action == GLFW_PRESS)
-    {
-        g_ShowInfoText = !g_ShowInfoText;
-    }
 }
 
 // Definimos o callback para impressão de erros da GLFW no terminal
