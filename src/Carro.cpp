@@ -47,15 +47,6 @@ bool Carro::cruzouLimites(vector <glm::vec4> pontos){
         return true;
     }
 
-    if(pontos[0][0]>=5 || pontos[0][2]>=10.25 || pontos[1][0]>=5 || pontos[1][2]>=10.25){
-        return true;
-    }
-
-    if(pontos[0][0]<=-5 || pontos[0][2]<=0.25 || pontos[1][0]<=-5 || pontos[1][2]<=0.25){
-        return true;
-    }
-
-
     return false;
 }
 
