@@ -37,21 +37,14 @@ glm::mat4 matrix_rotate_y(float angle)
            );
 }
 
-bool Carro::cruzouLimites(vector <glm::vec4> pontos)
-{
+bool Carro::cruzouLimites(vector <glm::vec4> pontos){
 
-    for(int i = 0; i < pontos.size(); i++)
-    {
-        //Blocos externos
-        if(pontos[i][0]>=9 || pontos[i][0]<=-9 || pontos[i][2]>=14  || pontos[i][2]<=-4)
-        {
-            return true;
-        }
-        //Blocos internos
-        if(pontos[i][0]<5 && pontos[i][0]>-5 && pontos[i][2]<10 && pontos[i][2]>0)
-        {
-            return true;
-        }
+    if(pontos[0][0]>=8 || pontos[0][2]>=13.25 || pontos[1][0]>=8 || pontos[1][2]>=13.25){
+        return true;
+    }
+
+    if(pontos[0][0]<=-8 || pontos[0][2]<=-3.25 || pontos[1][0]<=-8 || pontos[1][2]<=-3.25){
+        return true;
     }
 
     return false;
@@ -63,18 +56,13 @@ bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
     vector <glm::vec4> pontos;
     glm::vec4 vetor90graus = glm::vec4(sentido[2],sentido[1],sentido[0],0);
 
-    glm::vec4 vetorsuperiordir = ((comprimento/2)*sentido) + ((largura/2)*vetor90graus);
-    glm::vec4 vetorsuperioresq = ((comprimento/2)*sentido) + ((largura/2)*-vetor90graus);
-    glm::vec4 vetorinferiordir = ((comprimento/2)*-sentido) + ((largura/2)*vetor90graus);
-    glm::vec4 vetorinferioresq = ((comprimento/2)*-sentido) + ((largura/2)*-vetor90graus);
+    glm::vec4 vetorsuperior = ((comprimento/2)*sentido) + ((largura/2)*vetor90graus);
+    glm::vec4 vetorinferior = ((comprimento/2)*-sentido) + ((largura/2)*-vetor90graus);
 
-    pontos.push_back(position + vetorsuperiordir);
-    pontos.push_back(position + vetorinferiordir);
-    pontos.push_back(position + vetorsuperioresq);
-    pontos.push_back(position + vetorinferioresq);
+    pontos.push_back(position + vetorsuperior);
+    pontos.push_back(position + vetorinferior);
 
-    if(cruzouLimites(pontos))
-    {
+    if(cruzouLimites(pontos)){
         return true;
     }
     return false;
@@ -88,10 +76,10 @@ void Carro::moveCarro(double time)
                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
                                     0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    ahead[0], ahead[1], ahead[2], 1.0f       // LINHA 4
+                                    speed*ahead[0], speed*ahead[1], speed*ahead[2], 1.0f       // LINHA 4
                                 );
         matrix = (translation) * matrix;
-        position = position + ahead;
+        position = position + speed*ahead;
         position[3] = 1;
     }
     last_time = time;
@@ -111,7 +99,7 @@ void Carro::turnRight()
                                  0.0f, 0.0f, 1.0f, 0,      // LINHA 3
                                  position[0], position[1], position[2], 1.0f       // LINHA 4
                              );
-    glm::mat4 rotation = matrix_rotate_y(-0.2);
+    glm::mat4 rotation = matrix_rotate_y(-0.1);
     matrix = translation2 * rotation * translation* matrix;
     ahead = rotation * ahead;
 }
@@ -130,14 +118,13 @@ void Carro::turnLeft()
                                  0.0f, 0.0f, 1.0f, 0,      // LINHA 3
                                  position[0], position[1], position[2], 1.0f       // LINHA 4
                              );
-    glm::mat4 rotation = matrix_rotate_y(0.2);
+    glm::mat4 rotation = matrix_rotate_y(0.1);
     matrix = translation2 * rotation * translation* matrix;
     ahead = rotation * ahead;
 }
 
 void Carro::moveCarBack()
 {
-    if(!testeColisao(position, -ahead)){
     glm::mat4 translation = glm::mat4(
                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
@@ -147,7 +134,6 @@ void Carro::moveCarBack()
     matrix = (translation) * matrix;
     position = position - ahead;
     position[3] = 1;
-    }
 }
 
 glm::mat4 Carro::getMatrix()
