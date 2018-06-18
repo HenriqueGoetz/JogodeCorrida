@@ -446,7 +446,6 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        cout << "Loop" << endl;
     }
 
     glfwTerminate();
@@ -799,7 +798,6 @@ GLuint BuildPista()
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
     glBindVertexArray(0);
 
-    cout << "Finished building" << endl;
     return vertex_array_object_id;
 
 }
@@ -879,7 +877,6 @@ GLuint BuildChao()
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
     glBindVertexArray(0);
 
-    cout << "Finished building" << endl;
     return vertex_array_object_id;
 
 }
@@ -900,8 +897,6 @@ GLuint BuildCar()
         model_coefficients[i*4+1] = vertices[i][1];
         model_coefficients[i*4+2] = vertices[i][2];
         model_coefficients[i*4+3] = 1;
-
-        cout << model_coefficients[i*4+0] << " " << model_coefficients[i*4+1]<< " "<< model_coefficients[i*4+2]<< " "<< model_coefficients[i*4+3] << endl;
 
         color_coefficients[i*4] = 1.0f;
         color_coefficients[i*4+1] = 0.0f;
@@ -965,7 +960,6 @@ GLuint BuildCar()
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
     glBindVertexArray(0);
 
-    cout << "Finished building" << endl;
     return vertex_array_object_id;
 }
 

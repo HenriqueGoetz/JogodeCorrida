@@ -13,6 +13,7 @@ class Carro
          double last_time;
          glm::vec4 ahead = glm::vec4(0.0,0.0,1.0,0.0);
          glm::vec4 position = glm::vec4(0.0,0.0,0.0,1.0);
+         bool testeColisao(glm::vec4 position, glm::vec4 sentido);
 
     public:
         Carro();
