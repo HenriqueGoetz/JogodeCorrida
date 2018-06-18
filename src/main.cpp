@@ -23,6 +23,7 @@ GLuint BuildCubo(); // Constrói triângulos para renderização
 GLuint BuildCar(); // Constrói triângulos para renderização
 GLuint BuildChao(); // Constrói triângulos para renderização
 GLuint BuildPista(); // Constrói triângulos para renderização
+GLuint BuildCow(); // Constrói triângulos para renderização
 GLuint LoadShader_Vertex(const char* filename);   // Carrega um vertex shader
 GLuint LoadShader_Fragment(const char* filename); // Carrega um fragment shader
 void LoadShader(const char* filename, GLuint shader_id); // Função utilizada pelas duas acima
@@ -142,6 +143,49 @@ void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort
 
 }
 
+void load_obj2(const char* filename, vector<glm::vec4> &vertices, vector<GLushort> &elements)
+{
+    ifstream in(filename, ios::in);
+    if (!in)
+    {
+        cerr << "Não pode abrir o arquivo: " << filename << endl;
+        exit(1);
+    }
+
+    string line;
+    while (getline(in, line))
+    {
+        if (line.substr(0,2) == "v ")
+        {
+            istringstream s(line.substr(2));
+            glm::vec4 v;
+            s >> v.x;
+            s >> v.y;
+            s >> v.z;
+            v.w = 1.0f;
+            vertices.push_back(v);
+        }
+        else if (line.substr(0,2) == "f ")
+        {
+            istringstream s(line.substr(2));
+
+            GLushort a,b,c, d;
+            char ch;
+            int n;
+            s >> a;
+            s >> b;
+            s >> c;
+            a--;
+            b--;
+            c--;
+            elements.push_back(a);
+            elements.push_back(b);
+            elements.push_back(c);
+        }
+    }
+
+}
+
 int main()
 {
     int success = glfwInit();
@@ -198,6 +242,7 @@ int main()
     GLuint vertex_array_object_id2 = BuildChao();
     GLuint vertex_array_object_id3 = BuildPista();
     GLuint vertex_array_object_id4 = BuildCubo();
+    GLuint vertex_array_object_id5 = BuildCow();
 
     //TextRendering_Init();
 
@@ -949,6 +994,88 @@ GLuint BuildCar()
 
     // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
     g_VirtualScene["carro"] = cube_faces;
+
+    GLuint indices_id;
+    glGenBuffers(1, &indices_id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
+    glBindVertexArray(0);
+
+    return vertex_array_object_id;
+}
+
+GLuint BuildCow()
+{
+    vector<glm::vec4> vertices;
+    vector<GLushort> elements;
+    char* filename = "../../utilities/cow.obj";
+    load_obj2(filename, vertices, elements);
+
+    GLfloat model_coefficients[vertices.size()*4];
+    GLfloat color_coefficients[vertices.size()*4];
+
+    for(int i = 0; i < vertices.size(); i++)
+    {
+        model_coefficients[i*4] = vertices[i][0];
+        model_coefficients[i*4+1] = vertices[i][1];
+        model_coefficients[i*4+2] = vertices[i][2];
+        model_coefficients[i*4+3] = 1;
+
+        color_coefficients[i*4] = 1.0f;
+        color_coefficients[i*4+1] = 0.0f;
+        color_coefficients[i*4+2] = 0.0f;
+        color_coefficients[i*4+3] = 1.0f;
+    }
+
+    GLuint indices[elements.size()];
+
+    for(int i = 0; i < elements.size(); i++)
+    {
+        indices[i] = elements[i];
+    }
+
+    GLuint VBO_model_coefficients_id;
+    glGenBuffers(1, &VBO_model_coefficients_id);
+
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+
+    glBindVertexArray(vertex_array_object_id);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
+
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
+
+    GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
+    GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnableVertexAttribArray(location);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint VBO_color_coefficients_id;
+    glGenBuffers(1, &VBO_color_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_color_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
+    location = 1; // "(location = 1)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    SceneObject cube_faces;
+    cube_faces.name           = "Cubo (faces coloridas)";
+    cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
+    cube_faces.num_indices    = elements.size();       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
+
+    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
+    g_VirtualScene["cow"] = cube_faces;
 
     GLuint indices_id;
     glGenBuffers(1, &indices_id);
