@@ -1197,7 +1197,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     }
     if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {
-        camera_position_c = camera_position_c-0.01f*camera_view_vector;
+        car.moveCarBack();
     }
     if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {

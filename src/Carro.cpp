@@ -27,16 +27,17 @@ glm::mat4 matrix_rotate_y(float angle)
     float c = cos(angle);
     float s = sin(angle);
     return glm::mat4(
-        // PREENCHA AQUI A MATRIZ DE ROTAÇÃO (3D) EM TORNO DO EIXO Y EM COORD.
-        // HOMOGÊNEAS, UTILIZANDO OS PARÂMETROS c e s
-        cos(angle) , 0.0f , -sin(angle) , 0.0f ,  // LINHA 1
-        0.0f , 1.0f , 0.0f , 0.0f ,  // LINHA 2
-        sin(angle) , 0.0f , cos(angle) , 0.0f ,  // LINHA 3
-        0.0f , 0.0f , 0.0f , 1.0f    // LINHA 4
-    );
+               // PREENCHA AQUI A MATRIZ DE ROTAÇÃO (3D) EM TORNO DO EIXO Y EM COORD.
+               // HOMOGÊNEAS, UTILIZANDO OS PARÂMETROS c e s
+               cos(angle), 0.0f, -sin(angle), 0.0f,      // LINHA 1
+               0.0f, 1.0f, 0.0f, 0.0f,      // LINHA 2
+               sin(angle), 0.0f, cos(angle), 0.0f,      // LINHA 3
+               0.0f, 0.0f, 0.0f, 1.0f       // LINHA 4
+           );
 }
 
-bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido){
+bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
+{
 
     vector <glm::vec4> pontos;
     glm::vec4 vetor90graus = glm::vec4(sentido[2],sentido[1],sentido[0],0);
@@ -66,40 +67,55 @@ void Carro::moveCarro(double time)
     last_time = time;
 }
 
-void Carro::turnRight(){
+void Carro::turnRight()
+{
     glm::mat4 translation = glm::mat4(
-                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    -position[0], -position[1], -position[2], 1.0f       // LINHA 4
-                                );
+                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                -position[0], -position[1], -position[2], 1.0f       // LINHA 4
+                            );
     glm::mat4 translation2 = glm::mat4(
-                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    position[0], position[1], position[2], 1.0f       // LINHA 4
-                                );
+                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                 0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                 position[0], position[1], position[2], 1.0f       // LINHA 4
+                             );
     glm::mat4 rotation = matrix_rotate_y(-0.3);
     matrix = translation2 * rotation * translation* matrix;
     ahead = rotation * ahead;
 }
 
-void Carro::turnLeft(){
+void Carro::turnLeft()
+{
     glm::mat4 translation = glm::mat4(
-                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    -position[0], -position[1], -position[2], 1.0f       // LINHA 4
-                                );
+                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                -position[0], -position[1], -position[2], 1.0f       // LINHA 4
+                            );
     glm::mat4 translation2 = glm::mat4(
-                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    position[0], position[1], position[2], 1.0f       // LINHA 4
-                                );
+                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                 0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                 position[0], position[1], position[2], 1.0f       // LINHA 4
+                             );
     glm::mat4 rotation = matrix_rotate_y(0.3);
     matrix = translation2 * rotation * translation* matrix;
     ahead = rotation * ahead;
+}
+
+void Carro::moveCarBack()
+{
+    glm::mat4 translation = glm::mat4(
+                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                -ahead[0], -ahead[1], -ahead[2], 1.0f       // LINHA 4
+                            );
+    matrix = (translation) * matrix;
+    position = position - ahead;
+    position[3] = 1;
 }
 
 glm::mat4 Carro::getMatrix()
@@ -107,13 +123,15 @@ glm::mat4 Carro::getMatrix()
     return matrix;
 }
 
-glm::vec4 Carro::getCameraPosition(){
+glm::vec4 Carro::getCameraPosition()
+{
     glm::vec4 result = position;
     result[1] += 3;
     result = result -8.0f*ahead;
     return result;
 }
 
-glm::vec4 Carro::getCameraView(){
+glm::vec4 Carro::getCameraView()
+{
     return ahead;
 }
