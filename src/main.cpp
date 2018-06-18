@@ -199,7 +199,7 @@ int main()
     GLuint vertex_array_object_id3 = BuildPista();
     GLuint vertex_array_object_id4 = BuildCubo();
 
-    TextRendering_Init();
+    //TextRendering_Init();
 
     GLint model_uniform           = glGetUniformLocation(program_id, "model"); // Variável da matriz "model"
     GLint view_uniform            = glGetUniformLocation(program_id, "view"); // Variável da matriz "view" em shader_vertex.glsl
@@ -439,13 +439,6 @@ int main()
         glBindVertexArray(0);
 
         glm::vec4 p_model(0.5f, 0.5f, 0.5f, 1.0f);
-        TextRendering_ShowModelViewProjection(window, the_projection, the_view, the_model, p_model);
-
-        TextRendering_ShowEulerAngles(window);
-
-        TextRendering_ShowProjection(window);
-
-        TextRendering_ShowFramesPerSecond(window);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
