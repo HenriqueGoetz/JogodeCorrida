@@ -3,6 +3,7 @@
 #include <glm/mat4x4.hpp>
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -36,17 +37,34 @@ glm::mat4 matrix_rotate_y(float angle)
            );
 }
 
+bool Carro::cruzouLimites(vector <glm::vec4> pontos){
+
+    if(pontos[0][0]>=8.25 || pontos[0][2]>=13.25 || pontos[1][0]>=8.25 || pontos[1][2]>=13.25){
+        return true;
+    }
+
+    if(pontos[0][0]<=-8.25 || pontos[0][2]<=-3.25 || pontos[1][0]<=-8.25 || pontos[1][2]<=-3.25){
+        return true;
+    }
+
+    return false;
+}
+
 bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
 {
 
     vector <glm::vec4> pontos;
     glm::vec4 vetor90graus = glm::vec4(sentido[2],sentido[1],sentido[0],0);
 
-    glm::vec4 vetorsuperior = ((comprimento/2)*vetorsuperior) + ((largura/2)*vetor90graus);
+    glm::vec4 vetorsuperior = ((comprimento/2)*sentido) + ((largura/2)*vetor90graus);
+    glm::vec4 vetorinferior = ((comprimento/2)*-sentido) + ((largura/2)*-vetor90graus);
 
     pontos.push_back(position + vetorsuperior);
+    pontos.push_back(position + vetorinferior);
 
-
+    if(cruzouLimites(pontos)){
+        return true;
+    }
     return false;
 }
 

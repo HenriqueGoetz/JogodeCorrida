@@ -2,6 +2,10 @@
 #define CARRO_H
 #include <glm/mat4x4.hpp>
 #include <glm/vec4.hpp>
+#include <vector>
+
+
+using namespace std;
 
 class Carro
 {
@@ -14,6 +18,7 @@ class Carro
          glm::vec4 ahead = glm::vec4(0.0,0.0,1.0,0.0);
          glm::vec4 position = glm::vec4(0.0,0.0,0.0,1.0);
          bool testeColisao(glm::vec4 position, glm::vec4 sentido);
+         bool cruzouLimites(vector <glm::vec4> pontos);
 
     public:
         Carro();

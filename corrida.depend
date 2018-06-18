@@ -401,7 +401,7 @@
 	<stddef.h>
 	<stdint.h>
 
-1529274078 source:c:\users\henrique goetz\desktop\jogodecorrida\src\main.cpp
+1529283038 source:c:\users\henrique goetz\desktop\jogodecorrida\src\main.cpp
 	<cmath>
 	<cstdio>
 	<cstdlib>
@@ -507,15 +507,18 @@
 1529270932 c:\users\henrique goetz\desktop\jogodecorrida\include\glm\matrix.hpp
 	"detail/func_matrix.hpp"
 
-1529277220 c:\users\henrique goetz\desktop\jogodecorrida\include\carro.h
+1529284361 c:\users\henrique goetz\desktop\jogodecorrida\include\carro.h
 	<glm/mat4x4.hpp>
 	<glm/vec4.hpp>
+	<vector>
 
-1529277220 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
+1529285147 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
 	"Carro.h"
 	<GLFW/glfw3.h>
 	<glm/mat4x4.hpp>
 	<iostream>
+	<vector>
+	<cmath>
 
 1529181854 source:c:\users\mathe\documents\github\jogodecorrida\src\glad.c
 	<stdio.h>
