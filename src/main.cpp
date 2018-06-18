@@ -477,6 +477,24 @@ int main()
             (void*)g_VirtualScene["cubo"].first_index
         );
         /////////////
+        //COW
+        glBindVertexArray(vertex_array_object_id5);
+
+        model = Matrix_Identity()
+            *Matrix_Translate(0,0.5,5);
+        glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+
+        glUniform1i(render_as_black_uniform, false);
+
+        glDrawElements(
+            g_VirtualScene["cow"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
+            g_VirtualScene["cow"].num_indices,    //
+            GL_UNSIGNED_INT,
+            (void*)g_VirtualScene["cow"].first_index
+        );
+        /////////////
+
+
         model = Matrix_Identity();
 
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));

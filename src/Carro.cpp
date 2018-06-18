@@ -39,13 +39,22 @@ glm::mat4 matrix_rotate_y(float angle)
 
 bool Carro::cruzouLimites(vector <glm::vec4> pontos){
 
-    if(pontos[0][0]>=8.25 || pontos[0][2]>=13.25 || pontos[1][0]>=8.25 || pontos[1][2]>=13.25){
+    if(pontos[0][0]>=8 || pontos[0][2]>=13.25 || pontos[1][0]>=8 || pontos[1][2]>=13.25){
         return true;
     }
 
-    if(pontos[0][0]<=-8.25 || pontos[0][2]<=-3.25 || pontos[1][0]<=-8.25 || pontos[1][2]<=-3.25){
+    if(pontos[0][0]<=-8 || pontos[0][2]<=-3.25 || pontos[1][0]<=-8 || pontos[1][2]<=-3.25){
         return true;
     }
+
+    if(pontos[0][0]>=5 || pontos[0][2]>=10.25 || pontos[1][0]>=5 || pontos[1][2]>=10.25){
+        return true;
+    }
+
+    if(pontos[0][0]<=-5 || pontos[0][2]<=0.25 || pontos[1][0]<=-5 || pontos[1][2]<=0.25){
+        return true;
+    }
+
 
     return false;
 }
