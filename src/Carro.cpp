@@ -37,7 +37,7 @@ glm::mat4 matrix_rotate_y(float angle)
 
 void Carro::moveCarro(double time)
 {
-    if(last_time != 0)
+    if(last_time != 0 && !testeColisao(position+ahead))
     {
         glm::mat4 translation = glm::mat4(
                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
@@ -50,6 +50,18 @@ void Carro::moveCarro(double time)
         position[3] = 1;
     }
     last_time = time;
+}
+
+bool testeColisao(glm::vec4 position, glm::vec4 sentido){
+
+        vector <glm::vec4> pontos;
+        glm::vec4 vetor90graus = (sentido[2],sentido[1],sentido[0],0);
+        glm::vec4 vetorsuperior = ((this.comprimento/2)*vetorsuperior) + ((this.largura/2)*vetor90graus);
+
+        pontos[0] = position + vetorsuperior;
+
+
+    return false;
 }
 
 void Carro::turnRight(){
