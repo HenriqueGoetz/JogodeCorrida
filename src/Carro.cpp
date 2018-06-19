@@ -15,6 +15,7 @@ Carro::Carro()
                  0, 0, 0.5f, 0, // COLUNA 3
                  0, 0, 0, 1  // COLUNA 4
              );
+
     turnRight();
     turnRight();
     turnRight();
@@ -34,6 +35,7 @@ Carro::Carro()
                 );
 
     position = position + glm::vec4(0,0,-2,0);
+
     last_time = glfwGetTime();
 }
 
@@ -58,22 +60,24 @@ glm::mat4 matrix_rotate_y(float angle)
 
 bool Carro::cruzouLimites(vector <glm::vec4> pontos)
 {
+    bool retorno = false;
 
     for(int i = 0; i < pontos.size(); i++)
     {
+        printf("Ponto i : %f ,%f\n", pontos[i][0], pontos[i][2]);
         //Blocos externos
         if(pontos[i][0]>=9 || pontos[i][0]<=-9 || pontos[i][2]>=14  || pontos[i][2]<=-4)
         {
-            return true;
+            retorno =  true;
         }
         //Blocos internos
         if(pontos[i][0]<5 && pontos[i][0]>-5 && pontos[i][2]<10 && pontos[i][2]>0)
         {
-            return true;
+            retorno = true;
         }
     }
 
-    return false;
+    return retorno;
 }
 
 bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
@@ -88,12 +92,13 @@ bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
     glm::vec4 vetorinferioresq = ((comprimento/2)*-sentido) + ((largura/2)*-vetor90graus);
 
     pontos.push_back(position + (vetorsuperiordir*speed));
-    pontos.push_back(position + (vetorinferiordir*speed));
     pontos.push_back(position + (vetorsuperioresq*speed));
+    pontos.push_back(position + (vetorinferiordir*speed));
     pontos.push_back(position + (vetorinferioresq*speed));
 
     if(cruzouLimites(pontos))
     {
+        printf("Colidiu.\n");
         return true;
     }
     return false;
@@ -101,8 +106,9 @@ bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
 
 void Carro::moveCarro(double time)
 {
-    if(last_time != 0 && !Carro::testeColisao(position,ahead))
+    if(!testeColisao(position+ahead,ahead))
     {
+        printf("Moveu\n");
         glm::mat4 translation = glm::mat4(
                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
@@ -156,7 +162,7 @@ void Carro::turnLeft()
 
 void Carro::moveCarBack()
 {
-    if(!testeColisao(position, -ahead)){
+    if(!testeColisao(position-ahead, -ahead)){
     glm::mat4 translation = glm::mat4(
                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2

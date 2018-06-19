@@ -507,12 +507,12 @@
 1529366512 c:\users\henrique goetz\desktop\jogodecorrida\include\glm\matrix.hpp
 	"detail/func_matrix.hpp"
 
-1529415189 c:\users\henrique goetz\desktop\jogodecorrida\include\carro.h
+1529418655 c:\users\henrique goetz\desktop\jogodecorrida\include\carro.h
 	<glm/mat4x4.hpp>
 	<glm/vec4.hpp>
 	<vector>
 
-1529415597 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
+1529418616 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
 	"Carro.h"
 	<GLFW/glfw3.h>
 	<glm/mat4x4.hpp>
