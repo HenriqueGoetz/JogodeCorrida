@@ -14,7 +14,26 @@ Carro::Carro()
                  0, 0.5f, 0, 0, // COLUNA 2
                  0, 0, 0.5f, 0, // COLUNA 3
                  0, 0, 0, 1  // COLUNA 4
-             );;
+             );
+    turnRight();
+    turnRight();
+    turnRight();
+    turnRight();
+    turnRight();
+    turnRight();
+    turnRight();
+    turnRight();
+
+
+
+    matrix = matrix * glm::mat4(
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 1, 0,
+                    -4, 0, 0, 1
+                );
+
+    position = position + glm::vec4(0,0,-2,0);
     last_time = glfwGetTime();
 }
 
@@ -137,7 +156,7 @@ void Carro::turnLeft()
 
 void Carro::moveCarBack()
 {
-    if(true||!testeColisao(position, -ahead)){
+    if(!testeColisao(position, -ahead)){
     glm::mat4 translation = glm::mat4(
                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
