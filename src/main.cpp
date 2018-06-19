@@ -860,7 +860,9 @@ GLuint BuildCubo()
 
 GLuint BuildPista()
 {
-
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+    glBindVertexArray(vertex_array_object_id);
     GLfloat model_coefficients[] =
     {
         // Vértices do chao
@@ -901,26 +903,31 @@ GLuint BuildPista()
 
     };
 
+    float normal_coefficients[]=
+    {
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+    };
+
     GLuint VBO_model_coefficients_id;
     glGenBuffers(1, &VBO_model_coefficients_id);
-
-    GLuint vertex_array_object_id;
-    glGenVertexArrays(1, &vertex_array_object_id);
-
-    glBindVertexArray(vertex_array_object_id);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
-
     glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
-
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
-
     GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
     GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
     glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-
     glEnableVertexAttribArray(location);
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     GLuint VBO_color_coefficients_id;
@@ -934,14 +941,25 @@ GLuint BuildPista()
     glEnableVertexAttribArray(location);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+    GLuint VBO_normal_coefficients_id;
+    glGenBuffers(1, &VBO_normal_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_normal_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normal_coefficients), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(normal_coefficients), normal_coefficients);
+    location = 2; // "(location = 2)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     SceneObject cube_faces;
     cube_faces.name           = "Cubo (faces coloridas)";
     cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
-    cube_faces.num_indices    = 24;       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.num_indices    = 6;       // Último índice está em indices[35]; total de 36 índices.
     cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
 
     // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
-    g_VirtualScene["pista"] = cube_faces;
+    g_VirtualScene["chao"] = cube_faces;
 
     GLuint indices_id;
     glGenBuffers(1, &indices_id);
