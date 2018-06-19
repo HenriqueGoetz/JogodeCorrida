@@ -64,7 +64,7 @@ bool Carro::cruzouLimites(vector <glm::vec4> pontos)
 
     for(int i = 0; i < pontos.size(); i++)
     {
-        printf("Ponto i : %f ,%f\n", pontos[i][0], pontos[i][2]);
+        //printf("Ponto i : %f ,%f\n", pontos[i][0], pontos[i][2]);
         //Blocos externos
         if(pontos[i][0]>=9 || pontos[i][0]<=-9 || pontos[i][2]>=14  || pontos[i][2]<=-4)
         {
@@ -98,7 +98,7 @@ bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
 
     if(cruzouLimites(pontos))
     {
-        printf("Colidiu.\n");
+        //printf("Colidiu.\n");
         return true;
     }
     return false;
@@ -108,7 +108,7 @@ void Carro::moveCarro(double time)
 {
     if(!testeColisao(position+(speed*ahead),ahead))
     {
-        printf("Moveu\n");
+        //printf("Moveu\n");
         glm::mat4 translation = glm::mat4(
                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2

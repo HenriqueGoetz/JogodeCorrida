@@ -16,8 +16,34 @@
 #include <iostream>
 #include <vector>
 #include "Carro.h"
+#include <tiny_obj_loader.h>
 
 using namespace std;
+
+struct ObjModel
+{
+    tinyobj::attrib_t                 attrib;
+    std::vector<tinyobj::shape_t>     shapes;
+    std::vector<tinyobj::material_t>  materials;
+
+    // Este construtor lê o modelo de um arquivo utilizando a biblioteca tinyobjloader.
+    // Veja: https://github.com/syoyo/tinyobjloader
+    ObjModel(const char* filename, const char* basepath = NULL, bool triangulate = true)
+    {
+        printf("Carregando modelo \"%s\"... ", filename);
+
+        std::string err;
+        bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, filename, basepath, triangulate);
+
+        if (!err.empty())
+            fprintf(stderr, "\n%s\n", err.c_str());
+
+        if (!ret)
+            throw std::runtime_error("Erro ao carregar modelo.");
+
+        printf("OK.\n");
+    }
+};
 
 GLuint BuildCubo(); // Constrói triângulos para renderização
 GLuint BuildCar(); // Constrói triângulos para renderização
@@ -513,6 +539,69 @@ int main()
     return 0;
 }
 
+void ComputeNormals(ObjModel* model)
+{
+    if ( !model->attrib.normals.empty() )
+        return;
+
+    // Primeiro computamos as normais para todos os TRIÂNGULOS.
+    // Segundo, computamos as normais dos VÉRTICES através do método proposto
+    // por Gourad, onde a normal de cada vértice vai ser a média das normais de
+    // todas as faces que compartilham este vértice.
+
+    size_t num_vertices = model->attrib.vertices.size() / 3;
+
+    std::vector<int> num_triangles_per_vertex(num_vertices, 0);
+    std::vector<glm::vec4> vertex_normals(num_vertices, glm::vec4(0.0f,0.0f,0.0f,0.0f));
+
+    for (size_t shape = 0; shape < model->shapes.size(); ++shape)
+    {
+        size_t num_triangles = model->shapes[shape].mesh.num_face_vertices.size();
+
+        for (size_t triangle = 0; triangle < num_triangles; ++triangle)
+        {
+            assert(model->shapes[shape].mesh.num_face_vertices[triangle] == 3);
+
+            glm::vec4  vertices[3];
+            for (size_t vertex = 0; vertex < 3; ++vertex)
+            {
+                tinyobj::index_t idx = model->shapes[shape].mesh.indices[3*triangle + vertex];
+                const float vx = model->attrib.vertices[3*idx.vertex_index + 0];
+                const float vy = model->attrib.vertices[3*idx.vertex_index + 1];
+                const float vz = model->attrib.vertices[3*idx.vertex_index + 2];
+                vertices[vertex] = glm::vec4(vx,vy,vz,1.0);
+            }
+
+            const glm::vec4  a = vertices[0];
+            const glm::vec4  b = vertices[1];
+            const glm::vec4  c = vertices[2];
+
+            // PREENCHA AQUI o cálculo da normal de um triângulo cujos vértices
+            // estão nos pontos "a", "b", e "c", definidos no sentido anti-horário.
+            const glm::vec4  n = crossproduct(b-a, c-b);
+
+            for (size_t vertex = 0; vertex < 3; ++vertex)
+            {
+                tinyobj::index_t idx = model->shapes[shape].mesh.indices[3*triangle + vertex];
+                num_triangles_per_vertex[idx.vertex_index] += 1;
+                vertex_normals[idx.vertex_index] += n;
+                model->shapes[shape].mesh.indices[3*triangle + vertex].normal_index = idx.vertex_index;
+            }
+        }
+    }
+
+    model->attrib.normals.resize( 3*num_vertices );
+
+    for (size_t i = 0; i < vertex_normals.size(); ++i)
+    {
+        glm::vec4 n = vertex_normals[i] / (float)num_triangles_per_vertex[i];
+        n /= norm(n);
+        model->attrib.normals[3*i + 0] = n.x;
+        model->attrib.normals[3*i + 1] = n.y;
+        model->attrib.normals[3*i + 2] = n.z;
+    }
+}
+
 GLuint BuildCubo()
 {
     // Primeiro, definimos os atributos de cada vértice.
@@ -528,29 +617,30 @@ GLuint BuildCubo()
     // Este vetor "model_coefficients" define a GEOMETRIA (veja slide 112 do
     // documento "Aula_04_Modelagem_Geometrica_3D.pdf").
     //
-    GLfloat model_coefficients[] = {
-    // Vértices de um cubo
-    //    X      Y     Z     W
+    GLfloat model_coefficients[] =
+    {
+        // Vértices de um cubo
+        //    X      Y     Z     W
         -0.5f,  0.5f,  0.5f, 1.0f, // posição do vértice 0
         -0.5f, -0.5f,  0.5f, 1.0f, // posição do vértice 1
-         0.5f, -0.5f,  0.5f, 1.0f, // posição do vértice 2
-         0.5f,  0.5f,  0.5f, 1.0f, // posição do vértice 3
+        0.5f, -0.5f,  0.5f, 1.0f, // posição do vértice 2
+        0.5f,  0.5f,  0.5f, 1.0f, // posição do vértice 3
         -0.5f,  0.5f, -0.5f, 1.0f, // posição do vértice 4
         -0.5f, -0.5f, -0.5f, 1.0f, // posição do vértice 5
-         0.5f, -0.5f, -0.5f, 1.0f, // posição do vértice 6
-         0.5f,  0.5f, -0.5f, 1.0f, // posição do vértice 7
-    // Vértices para desenhar o eixo X
-    //    X      Y     Z     W
-         0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 8
-         1.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 9
-    // Vértices para desenhar o eixo Y
-    //    X      Y     Z     W
-         0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 10
-         0.0f,  1.0f,  0.0f, 1.0f, // posição do vértice 110.0f, 0.0f
-    // Vértices para desenhar o eixo Z
-    //    X      Y     Z     W
-         0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 12
-         0.0f,  0.0f,  1.0f, 1.0f, // posição do vértice 13
+        0.5f, -0.5f, -0.5f, 1.0f, // posição do vértice 6
+        0.5f,  0.5f, -0.5f, 1.0f, // posição do vértice 7
+        // Vértices para desenhar o eixo X
+        //    X      Y     Z     W
+        0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 8
+        1.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 9
+        // Vértices para desenhar o eixo Y
+        //    X      Y     Z     W
+        0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 10
+        0.0f,  1.0f,  0.0f, 1.0f, // posição do vértice 110.0f, 0.0f
+        // Vértices para desenhar o eixo Z
+        //    X      Y     Z     W
+        0.0f,  0.0f,  0.0f, 1.0f, // posição do vértice 12
+        0.0f,  0.0f,  1.0f, 1.0f, // posição do vértice 13
     };
 
     // Criamos o identificador (ID) de um Vertex Buffer Object (VBO).  Um VBO é
@@ -626,9 +716,10 @@ GLuint BuildCubo()
     // Tal cor é definida como coeficientes RGBA: Red, Green, Blue, Alpha;
     // isto é: Vermelho, Verde, Azul, Alpha (valor de transparência).
     // Conversaremos sobre sistemas de cores nas aulas de Modelos de Iluminação.
-    GLfloat color_coefficients[] = {
-    // Cores dos vértices do cubo
-    //  R     G     B     A
+    GLfloat color_coefficients[] =
+    {
+        // Cores dos vértices do cubo
+        //  R     G     B     A
         1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 0
         1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 1
         0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 2
@@ -637,13 +728,13 @@ GLuint BuildCubo()
         1.0f, 0.5f, 0.0f, 1.0f, // cor do vértice 5
         0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 6
         0.0f, 0.5f, 1.0f, 1.0f, // cor do vértice 7
-    // Cores para desenhar o eixo X
+        // Cores para desenhar o eixo X
         1.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 8
         1.0f, 0.0f, 0.0f, 1.0f, // cor do vértice 9
-    // Cores para desenhar o eixo Y
+        // Cores para desenhar o eixo Y
         0.0f, 1.0f, 0.0f, 1.0f, // cor do vértice 10
         0.0f, 1.0f, 0.0f, 1.0f, // cor do vértice 11
-    // Cores para desenhar o eixo Z
+        // Cores para desenhar o eixo Z
         0.0f, 0.0f, 1.0f, 1.0f, // cor do vértice 12
         0.0f, 0.0f, 1.0f, 1.0f, // cor do vértice 13
     };
@@ -667,10 +758,11 @@ GLuint BuildCubo()
     // Este vetor "indices" define a TOPOLOGIA (veja slide 112 do documento
     // "Aula_04_Modelagem_Geometrica_3D.pdf").
     //
-    GLuint indices[] = {
-    // Definimos os índices dos vértices que definem as FACES de um cubo
-    // através de 12 triângulos que serão desenhados com o modo de renderização
-    // GL_TRIANGLES.
+    GLuint indices[] =
+    {
+        // Definimos os índices dos vértices que definem as FACES de um cubo
+        // através de 12 triângulos que serão desenhados com o modo de renderização
+        // GL_TRIANGLES.
         0, 1, 2, // triângulo 1
         7, 6, 5, // triângulo 2
         3, 2, 6, // triângulo 3
@@ -683,9 +775,9 @@ GLuint BuildCubo()
         4, 3, 7, // triângulo 10
         4, 1, 0, // triângulo 11
         1, 6, 2, // triângulo 12
-    // Definimos os índices dos vértices que definem as ARESTAS de um cubo
-    // através de 12 linhas que serão desenhadas com o modo de renderização
-    // GL_LINES.
+        // Definimos os índices dos vértices que definem as ARESTAS de um cubo
+        // através de 12 linhas que serão desenhadas com o modo de renderização
+        // GL_LINES.
         0, 1, // linha 1
         1, 2, // linha 2
         2, 3, // linha 3
@@ -698,9 +790,9 @@ GLuint BuildCubo()
         5, 4, // linha 10
         5, 1, // linha 11
         7, 3, // linha 12
-    // Definimos os índices dos vértices que definem as linhas dos eixos X, Y,
-    // Z, que serão desenhados com o modo GL_LINES.
-        8 , 9 , // linha 1
+        // Definimos os índices dos vértices que definem as linhas dos eixos X, Y,
+        // Z, que serão desenhados com o modo GL_LINES.
+        8, 9,   // linha 1
         10, 11, // linha 2
         12, 13  // linha 3
     };
@@ -785,7 +877,7 @@ GLuint BuildPista()
         -9.0f,0.1f,9.0f,1.0f,
         9.0f,0.1f,-9.0f,1.0f,
         -9.0f,0.1f,-9.0f,1.0f
-        };
+    };
 
     GLfloat color_coefficients[]=
     {
@@ -864,6 +956,9 @@ GLuint BuildPista()
 
 GLuint BuildChao()
 {
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+    glBindVertexArray(vertex_array_object_id);
 
     GLfloat model_coefficients[] =
     {
@@ -888,26 +983,25 @@ GLuint BuildChao()
         0,1,2,1,2,3
     };
 
+    float normal_coefficients[]=
+    {
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+        0,1,0,0,
+    };
+
+
+
     GLuint VBO_model_coefficients_id;
     glGenBuffers(1, &VBO_model_coefficients_id);
-
-    GLuint vertex_array_object_id;
-    glGenVertexArrays(1, &vertex_array_object_id);
-
-    glBindVertexArray(vertex_array_object_id);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
-
     glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
-
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
-
     GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
     GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
     glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-
     glEnableVertexAttribArray(location);
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     GLuint VBO_color_coefficients_id;
@@ -916,6 +1010,17 @@ GLuint BuildChao()
     glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
     location = 1; // "(location = 1)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint VBO_normal_coefficients_id;
+    glGenBuffers(1, &VBO_normal_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_normal_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normal_coefficients), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(normal_coefficients), normal_coefficients);
+    location = 2; // "(location = 2)" em "shader_vertex.glsl"
     number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
     glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(location);
@@ -943,62 +1048,98 @@ GLuint BuildChao()
 
 GLuint BuildCar()
 {
-    vector<glm::vec4> vertices;
-    vector<GLushort> elements;
+
     char* filename = "../../utilities/Car.obj";
-    load_obj(filename, vertices, elements);
-
-    GLfloat model_coefficients[vertices.size()*4];
-    GLfloat color_coefficients[vertices.size()*4];
-
-    for(int i = 0; i < vertices.size(); i++)
-    {
-        model_coefficients[i*4] = vertices[i][0];
-        model_coefficients[i*4+1] = vertices[i][1];
-        model_coefficients[i*4+2] = vertices[i][2];
-        model_coefficients[i*4+3] = 1;
-
-        color_coefficients[i*4] = 1.0f;
-        color_coefficients[i*4+1] = 0.0f;
-        color_coefficients[i*4+2] = 0.0f;
-        color_coefficients[i*4+3] = 1.0f;
-    }
-
-    GLuint indices[elements.size()];
-
-    for(int i = 0; i < elements.size(); i++)
-    {
-        indices[i] = elements[i];
-    }
-
-    GLuint VBO_model_coefficients_id;
-    glGenBuffers(1, &VBO_model_coefficients_id);
+    ObjModel model(filename);
 
     GLuint vertex_array_object_id;
     glGenVertexArrays(1, &vertex_array_object_id);
-
     glBindVertexArray(vertex_array_object_id);
 
+    std::vector<GLuint> indices;
+    std::vector<float>  model_coefficients;
+    std::vector<float>  normal_coefficients;
+    std::vector<float>  color_coefficients;
+
+    //ComputeNormals(&model);
+
+    for (size_t shape = 0; shape < model.shapes.size(); ++shape)
+    {
+        size_t first_index = indices.size();
+        size_t num_triangles = model.shapes[shape].mesh.num_face_vertices.size();
+
+        for (size_t triangle = 0; triangle < num_triangles; ++triangle)
+        {
+            assert(model.shapes[shape].mesh.num_face_vertices[triangle] == 3);
+
+            for (size_t vertex = 0; vertex < 3; ++vertex)
+            {
+                tinyobj::index_t idx = model.shapes[shape].mesh.indices[3*triangle + vertex];
+
+                indices.push_back(first_index + 3*triangle + vertex);
+
+                const float vx = model.attrib.vertices[3*idx.vertex_index + 0];
+                const float vy = model.attrib.vertices[3*idx.vertex_index + 1];
+                const float vz = model.attrib.vertices[3*idx.vertex_index + 2];
+                //printf("tri %d vert %d = (%.2f, %.2f, %.2f)\n", (int)triangle, (int)vertex, vx, vy, vz);
+                model_coefficients.push_back( vx ); // X
+                model_coefficients.push_back( vy ); // Y
+                model_coefficients.push_back( vz ); // Z
+                model_coefficients.push_back( 1.0f ); // W
+
+                // Inspecionando o código da tinyobjloader, o aluno Bernardo
+                // Sulzbach (2017/1) apontou que a maneira correta de testar se
+                // existem normais e coordenadas de textura no ObjModel é
+                // comparando se o índice retornado é -1. Fazemos isso abaixo.
+
+                if ( idx.normal_index != -1 )
+                {
+                    const float nx = model.attrib.normals[3*idx.normal_index + 0];
+                    const float ny = model.attrib.normals[3*idx.normal_index + 1];
+                    const float nz = model.attrib.normals[3*idx.normal_index + 2];
+                    normal_coefficients.push_back( nx ); // X
+                    normal_coefficients.push_back( ny ); // Y
+                    normal_coefficients.push_back( nz ); // Z
+                    normal_coefficients.push_back( 0.0f ); // W
+                }
+                color_coefficients.push_back(1);
+                color_coefficients.push_back(0);
+                color_coefficients.push_back(0);
+                color_coefficients.push_back(1);
+            }
+        }
+    }
+
+    cout << sizeof(indices) << endl;
+
+    GLuint VBO_model_coefficients_id;
+    glGenBuffers(1, &VBO_model_coefficients_id);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
-
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
-
+    glBufferData(GL_ARRAY_BUFFER, model_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, model_coefficients.size() * sizeof(float), model_coefficients.data());
     GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
     GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
     glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-
     glEnableVertexAttribArray(location);
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     GLuint VBO_color_coefficients_id;
     glGenBuffers(1, &VBO_color_coefficients_id);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_color_coefficients_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
+    glBufferData(GL_ARRAY_BUFFER, color_coefficients.size()*sizeof(float), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, color_coefficients.size()*sizeof(float), color_coefficients.data());
     location = 1; // "(location = 1)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint VBO_normal_coefficients_id;
+    glGenBuffers(1, &VBO_normal_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_normal_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, normal_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, normal_coefficients.size() * sizeof(float), normal_coefficients.data());
+    location = 2; // "(location = 2)" em "shader_vertex.glsl"
     number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
     glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(location);
@@ -1007,17 +1148,17 @@ GLuint BuildCar()
     SceneObject cube_faces;
     cube_faces.name           = "Cubo (faces coloridas)";
     cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
-    cube_faces.num_indices    = elements.size();       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.num_indices    = indices.size();       // Último índice está em indices[35]; total de 36 índices.
     cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
 
-    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
+// Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
     g_VirtualScene["carro"] = cube_faces;
 
     GLuint indices_id;
     glGenBuffers(1, &indices_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size()*sizeof(GLuint), indices.data());
     glBindVertexArray(0);
 
     return vertex_array_object_id;
@@ -1025,62 +1166,95 @@ GLuint BuildCar()
 
 GLuint BuildCow()
 {
-    vector<glm::vec4> vertices;
-    vector<GLushort> elements;
     char* filename = "../../utilities/cow.obj";
-    load_obj2(filename, vertices, elements);
+    ObjModel model(filename);
 
-    GLfloat model_coefficients[vertices.size()*4];
-    GLfloat color_coefficients[vertices.size()*4];
+    GLuint vertex_array_object_id;
+    glGenVertexArrays(1, &vertex_array_object_id);
+    glBindVertexArray(vertex_array_object_id);
 
-    for(int i = 0; i < vertices.size(); i++)
+    std::vector<GLuint> indices;
+    std::vector<float>  model_coefficients;
+    std::vector<float>  normal_coefficients;
+    std::vector<float>  color_coefficients;
+
+    ComputeNormals(&model);
+
+    for (size_t shape = 0; shape < model.shapes.size(); ++shape)
     {
-        model_coefficients[i*4] = vertices[i][0];
-        model_coefficients[i*4+1] = vertices[i][1];
-        model_coefficients[i*4+2] = vertices[i][2];
-        model_coefficients[i*4+3] = 1;
+        size_t first_index = indices.size();
+        size_t num_triangles = model.shapes[shape].mesh.num_face_vertices.size();
 
-        color_coefficients[i*4] = 1.0f;
-        color_coefficients[i*4+1] = 0.0f;
-        color_coefficients[i*4+2] = 0.0f;
-        color_coefficients[i*4+3] = 1.0f;
-    }
+        for (size_t triangle = 0; triangle < num_triangles; ++triangle)
+        {
+            assert(model.shapes[shape].mesh.num_face_vertices[triangle] == 3);
 
-    GLuint indices[elements.size()];
+            for (size_t vertex = 0; vertex < 3; ++vertex)
+            {
+                tinyobj::index_t idx = model.shapes[shape].mesh.indices[3*triangle + vertex];
 
-    for(int i = 0; i < elements.size(); i++)
-    {
-        indices[i] = elements[i];
+                indices.push_back(first_index + 3*triangle + vertex);
+
+                const float vx = model.attrib.vertices[3*idx.vertex_index + 0];
+                const float vy = model.attrib.vertices[3*idx.vertex_index + 1];
+                const float vz = model.attrib.vertices[3*idx.vertex_index + 2];
+                //printf("tri %d vert %d = (%.2f, %.2f, %.2f)\n", (int)triangle, (int)vertex, vx, vy, vz);
+                model_coefficients.push_back( vx ); // X
+                model_coefficients.push_back( vy ); // Y
+                model_coefficients.push_back( vz ); // Z
+                model_coefficients.push_back( 1.0f ); // W
+
+                // Inspecionando o código da tinyobjloader, o aluno Bernardo
+                // Sulzbach (2017/1) apontou que a maneira correta de testar se
+                // existem normais e coordenadas de textura no ObjModel é
+                // comparando se o índice retornado é -1. Fazemos isso abaixo.
+
+                if ( idx.normal_index != -1 )
+                {
+                    const float nx = model.attrib.normals[3*idx.normal_index + 0];
+                    const float ny = model.attrib.normals[3*idx.normal_index + 1];
+                    const float nz = model.attrib.normals[3*idx.normal_index + 2];
+                    normal_coefficients.push_back( nx ); // X
+                    normal_coefficients.push_back( ny ); // Y
+                    normal_coefficients.push_back( nz ); // Z
+                    normal_coefficients.push_back( 0.0f ); // W
+                }
+                color_coefficients.push_back(1);
+                color_coefficients.push_back(0);
+                color_coefficients.push_back(0);
+                color_coefficients.push_back(1);
+            }
+        }
     }
 
     GLuint VBO_model_coefficients_id;
     glGenBuffers(1, &VBO_model_coefficients_id);
-
-    GLuint vertex_array_object_id;
-    glGenVertexArrays(1, &vertex_array_object_id);
-
-    glBindVertexArray(vertex_array_object_id);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBO_model_coefficients_id);
-
-    glBufferData(GL_ARRAY_BUFFER, sizeof(model_coefficients), NULL, GL_STATIC_DRAW);
-
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(model_coefficients), model_coefficients);
-
+    glBufferData(GL_ARRAY_BUFFER, model_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, model_coefficients.size() * sizeof(float), model_coefficients.data());
     GLuint location = 0; // "(location = 0)" em "shader_vertex.glsl"
     GLint  number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
     glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
-
     glEnableVertexAttribArray(location);
-
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     GLuint VBO_color_coefficients_id;
     glGenBuffers(1, &VBO_color_coefficients_id);
     glBindBuffer(GL_ARRAY_BUFFER, VBO_color_coefficients_id);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(color_coefficients), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(color_coefficients), color_coefficients);
+    glBufferData(GL_ARRAY_BUFFER, color_coefficients.size()*sizeof(float), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, color_coefficients.size()*sizeof(float), color_coefficients.data());
     location = 1; // "(location = 1)" em "shader_vertex.glsl"
+    number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
+    glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(location);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    GLuint VBO_normal_coefficients_id;
+    glGenBuffers(1, &VBO_normal_coefficients_id);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_normal_coefficients_id);
+    glBufferData(GL_ARRAY_BUFFER, normal_coefficients.size() * sizeof(float), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, normal_coefficients.size() * sizeof(float), normal_coefficients.data());
+    location = 2; // "(location = 2)" em "shader_vertex.glsl"
     number_of_dimensions = 4; // vec4 em "shader_vertex.glsl"
     glVertexAttribPointer(location, number_of_dimensions, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(location);
@@ -1089,17 +1263,17 @@ GLuint BuildCow()
     SceneObject cube_faces;
     cube_faces.name           = "Cubo (faces coloridas)";
     cube_faces.first_index    = (void*)0; // Primeiro índice está em indices[0]
-    cube_faces.num_indices    = elements.size();       // Último índice está em indices[35]; total de 36 índices.
+    cube_faces.num_indices    = indices.size();       // Último índice está em indices[35]; total de 36 índices.
     cube_faces.rendering_mode = GL_TRIANGLES; // Índices correspondem ao tipo de rasterização GL_TRIANGLES.
 
-    // Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
+// Adicionamos o objeto criado acima na nossa cena virtual (g_VirtualScene).
     g_VirtualScene["cow"] = cube_faces;
 
     GLuint indices_id;
     glGenBuffers(1, &indices_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), NULL, GL_STATIC_DRAW);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), NULL, GL_STATIC_DRAW);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size()*sizeof(GLuint), indices.data());
     glBindVertexArray(0);
 
     return vertex_array_object_id;
