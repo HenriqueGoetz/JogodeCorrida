@@ -25,14 +25,14 @@ Carro::Carro()
     turnRight();
     turnRight();
 
-
+    Naoinicializado = false;
 
     matrix = matrix * glm::mat4(
-                    1, 0, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, 1, 0,
-                    -4, 0, 0, 1
-                );
+                 1, 0, 0, 0,
+                 0, 1, 0, 0,
+                 0, 0, 1, 0,
+                 -4, 0, 0, 1
+             );
 
     position = position + glm::vec4(0,0,-2,0);
 
@@ -106,7 +106,7 @@ bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
 
 void Carro::moveCarro(double time)
 {
-    if(!testeColisao(position+ahead,ahead))
+    if(!testeColisao(position+(speed*ahead),ahead))
     {
         printf("Moveu\n");
         glm::mat4 translation = glm::mat4(
@@ -124,54 +124,62 @@ void Carro::moveCarro(double time)
 
 void Carro::turnRight()
 {
-    glm::mat4 translation = glm::mat4(
-                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                -position[0], -position[1], -position[2], 1.0f       // LINHA 4
-                            );
-    glm::mat4 translation2 = glm::mat4(
-                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                 0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                 position[0], position[1], position[2], 1.0f       // LINHA 4
-                             );
     glm::mat4 rotation = matrix_rotate_y(-0.2);
-    matrix = translation2 * rotation * translation* matrix;
-    ahead = rotation * ahead;
+    if(!testeColisao(position,ahead*rotation) || Naoinicializado)
+    {
+        glm::mat4 translation = glm::mat4(
+                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                    -position[0], -position[1], -position[2], 1.0f       // LINHA 4
+                                );
+        glm::mat4 translation2 = glm::mat4(
+                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                     0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                     position[0], position[1], position[2], 1.0f       // LINHA 4
+                                 );
+
+        matrix = translation2 * rotation * translation* matrix;
+        ahead = rotation * ahead;
+    }
 }
 
 void Carro::turnLeft()
 {
-    glm::mat4 translation = glm::mat4(
-                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                -position[0], -position[1], -position[2], 1.0f       // LINHA 4
-                            );
-    glm::mat4 translation2 = glm::mat4(
-                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                 0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                 position[0], position[1], position[2], 1.0f       // LINHA 4
-                             );
     glm::mat4 rotation = matrix_rotate_y(0.2);
-    matrix = translation2 * rotation * translation* matrix;
-    ahead = rotation * ahead;
-}
+    if(!testeColisao(position, ahead*rotation))
+    {
+        glm::mat4 translation = glm::mat4(
+                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                    -position[0], -position[1], -position[2], 1.0f       // LINHA 4
+                                );
+        glm::mat4 translation2 = glm::mat4(
+                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                     0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                     position[0], position[1], position[2], 1.0f       // LINHA 4
+                                 );
 
+        matrix = translation2 * rotation * translation* matrix;
+        ahead = rotation * ahead;
+    }
+}
 void Carro::moveCarBack()
 {
-    if(!testeColisao(position-ahead, -ahead)){
-    glm::mat4 translation = glm::mat4(
-                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                -ahead[0], -ahead[1], -ahead[2], 1.0f       // LINHA 4
-                            );
-    matrix = (translation) * matrix;
-    position = position - ahead;
-    position[3] = 1;
+    if(!testeColisao(position-(ahead*speed), -ahead))
+    {
+        glm::mat4 translation = glm::mat4(
+                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                    -ahead[0]*speed, -ahead[1]*speed, -ahead[2]*speed, 1.0f       // LINHA 4
+                                );
+        matrix = (translation) * matrix;
+        position = position - (ahead*speed);
+        position[3] = 1;
     }
 }
 
