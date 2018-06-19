@@ -125,8 +125,8 @@ void Carro::moveCarro(double time)
 void Carro::turnRight()
 {
     glm::mat4 rotation = matrix_rotate_y(-0.2);
-    if(!testeColisao(position,ahead*rotation) || Naoinicializado)
-    {
+    //if(!testeColisao(position,ahead*rotation) || Naoinicializado)
+    //{
         glm::mat4 translation = glm::mat4(
                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
@@ -142,14 +142,14 @@ void Carro::turnRight()
 
         matrix = translation2 * rotation * translation* matrix;
         ahead = rotation * ahead;
-    }
+    //}
 }
 
 void Carro::turnLeft()
 {
     glm::mat4 rotation = matrix_rotate_y(0.2);
-    if(!testeColisao(position, ahead*rotation))
-    {
+    //if(!testeColisao(position, ahead*rotation))
+    //{
         glm::mat4 translation = glm::mat4(
                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
@@ -165,7 +165,7 @@ void Carro::turnLeft()
 
         matrix = translation2 * rotation * translation* matrix;
         ahead = rotation * ahead;
-    }
+    //}
 }
 void Carro::moveCarBack()
 {

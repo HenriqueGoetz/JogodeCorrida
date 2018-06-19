@@ -512,7 +512,7 @@
 	<glm/vec4.hpp>
 	<vector>
 
-1529444216 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
+1529448211 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
 	"Carro.h"
 	<GLFW/glfw3.h>
 	<glm/mat4x4.hpp>
@@ -1554,4 +1554,21 @@
 	<GLFW/glfw3.h>
 	<glm/mat4x4.hpp>
 	<iostream>
+
+1529448211 source:c:\users\henrique goetz\desktop\jogodecorrida\src\tiny_obj_loader.cpp
+	"tiny_obj_loader.h"
+
+1529448210 c:\users\henrique goetz\desktop\jogodecorrida\include\tiny_obj_loader.h
+	<map>
+	<string>
+	<vector>
+	<cassert>
+	<cctype>
+	<cmath>
+	<cstddef>
+	<cstdlib>
+	<cstring>
+	<utility>
+	<fstream>
+	<sstream>
 
