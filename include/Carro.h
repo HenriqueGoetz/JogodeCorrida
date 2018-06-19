@@ -12,8 +12,8 @@ class Carro
     private:
          glm::mat4 matrix;
          float speed = 0.5f;
-         float comprimento = 2;
-         float largura = 1;
+         float comprimento = 3;
+         float largura = 2;
          double last_time;
          glm::vec4 ahead = glm::vec4(0.0,0.0,1.0,0.0);
          glm::vec4 position = glm::vec4(0.0,0.0,0.0,1.0);
