@@ -11,6 +11,7 @@ in vec4 normal;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform int isGourard;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -59,7 +60,11 @@ void main()
     vec4 phong_specular_term  = Ks*pow(max(dot(r,v),0),q); // PREENCH AQUI o termo especular de Phong
 
     color = lambert_diffuse_term + phong_specular_term;
-    color = pow(color, vec4(1.0,1.0,1.0,1.0)/2.2);
     //color = Kd;
     //color = n;
+
+    if(isGourard == 1){
+        color = cor_interpolada_pelo_rasterizador;
+    }
+    color = pow(color, vec4(1.0,1.0,1.0,1.0)/2.2);
 }

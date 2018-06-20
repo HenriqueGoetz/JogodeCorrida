@@ -331,7 +331,7 @@ int main()
     GLint model_uniform           = glGetUniformLocation(program_id, "model"); // Variável da matriz "model"
     GLint view_uniform            = glGetUniformLocation(program_id, "view"); // Variável da matriz "view" em shader_vertex.glsl
     GLint projection_uniform      = glGetUniformLocation(program_id, "projection"); // Variável da matriz "projection" em shader_vertex.glsl
-    GLint render_as_black_uniform = glGetUniformLocation(program_id, "render_as_black"); // Variável booleana em shader_vertex.glsl
+    GLint isGourard               = glGetUniformLocation(program_id, "isGourard");
 
     glEnable(GL_DEPTH_TEST);
 
@@ -353,7 +353,7 @@ int main()
 
     double timeinicial = glfwGetTime();
     bool venceu = false;
-    while (!glfwWindowShouldClose(window) && !venceu)
+    while (!glfwWindowShouldClose(window))
     {
         if(camera_lookat)
         {
@@ -386,7 +386,7 @@ int main()
         model = car.getMatrix();
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 0);
 
         glDrawElements(
             g_VirtualScene["carro"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -401,7 +401,7 @@ int main()
         model = Matrix_Translate(0,0,5);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 0);
 
         glDrawElements(
             g_VirtualScene["chao"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -432,7 +432,7 @@ int main()
                 *Matrix_Scale(20,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -449,7 +449,7 @@ int main()
                 *Matrix_Scale(20,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -466,7 +466,7 @@ int main()
                 *Matrix_Scale(1,1,18);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -484,7 +484,7 @@ int main()
                 *Matrix_Scale(1,1,18);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -503,7 +503,7 @@ int main()
                 *Matrix_Scale(10,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -521,7 +521,7 @@ int main()
                 *Matrix_Scale(10,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -538,7 +538,7 @@ int main()
                 *Matrix_Scale(1,1,8);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -555,7 +555,7 @@ int main()
                 *Matrix_Scale(1,1,8);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 1);
 
         glDrawElements(
             g_VirtualScene["cubo"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -571,7 +571,7 @@ int main()
                 *Matrix_Translate(0,0.5,5);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
-        glUniform1i(render_as_black_uniform, false);
+        glUniform1i(isGourard, 0);
 
         glDrawElements(
             g_VirtualScene["cow"].rendering_mode, // Veja slide 160 do documento "Aula_04_Modelagem_Geometrica_3D.pdf".
@@ -595,7 +595,7 @@ int main()
 
         if(car.cruzouChegada())
         {
-            printf("\n\n ----FIM----\n Voce terminou a corrida em %d segundos.\n", glfwGetTime() - timeinicial);
+            //printf("\n\n ----FIM----\n Voce terminou a corrida em %d segundos.\n", glfwGetTime() - timeinicial);
             venceu = true;
         }
 
