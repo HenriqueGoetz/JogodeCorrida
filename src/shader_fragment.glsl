@@ -15,6 +15,8 @@ uniform mat4 projection;
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
 
+uniform sampler2D TextureImage;
+
 void main()
 {
     vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
@@ -45,4 +47,5 @@ void main()
     color = pow(color, vec4(1.0,1.0,1.0,1.0)/2.2);
     //color = Kd;
     //color = n;
+    //color = texture(TextureImage, vec2(0,0.5)).rgba;
 }
