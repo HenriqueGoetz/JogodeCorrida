@@ -33,13 +33,12 @@ void main()
 
     vec4 r = normalize(2*dot(n,l)*n-l);
 
-    vec4 Kd; // Refletância difusa
-    vec4 Ks; // Refletância especular
-    float q; // Expoente especular para o modelo de iluminação de Phong
+    vec4 Kd = cor_interpolada_pelo_rasterizador;
+    vec4 Ks = vec4(0.8,0.8,0.8,0);
+    vec4 Ka = vec4(0.02,0.02,0.02,1);
+    float q = 32.0;
 
-    Kd = cor_interpolada_pelo_rasterizador;
-    Ks = vec4(0.8,0.8,0.8,0);
-    q = 32.0;
+    if(isGourard == 0){
     if(cor_interpolada_pelo_rasterizador == vec4(0.2,0.2,0.2,1.0)){
         float minx = -9;
         float maxx = 9;
@@ -56,15 +55,24 @@ void main()
         Kd = texture(TextureImage, vec2(U,V)).rgba;
     }
 
-    vec4 lambert_diffuse_term = Kd*max(dot(n,l),0);
-    vec4 phong_specular_term  = Ks*pow(max(dot(r,v),0),q); // PREENCH AQUI o termo especular de Phong
+    vec4 H = normalize( l + v );
 
-    color = lambert_diffuse_term + phong_specular_term;
+    //Intensity of the specular light
+	float NdotH = dot( n, H );
+
+	if(NdotH > 1)
+        NdotH = 1;
+    else if(NdotH < 0)
+        NdotH = 0;
+	vec4 phong_specular_term = pow( NdotH, 100-q )*Ks;
+
+    vec4 lambert_diffuse_term = Kd*max(dot(n,l),0);
+
+    color = lambert_diffuse_term + phong_specular_term + Ka;
     //color = Kd;
     //color = n;
-
-    if(isGourard == 1){
-        color = cor_interpolada_pelo_rasterizador;
+    }else{
+        color = cor_interpolada_pelo_rasterizador +Ka;
     }
     color = pow(color, vec4(1.0,1.0,1.0,1.0)/2.2);
 }

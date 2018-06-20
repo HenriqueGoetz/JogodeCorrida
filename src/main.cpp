@@ -112,107 +112,6 @@ bool g_ShowInfoText = true;
 
 Carro car;
 
-void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<GLushort> &elements)
-{
-    ifstream in(filename, ios::in);
-    if (!in)
-    {
-        cerr << "Não pode abrir o arquivo: " << filename << endl;
-        exit(1);
-    }
-
-    string line;
-    while (getline(in, line))
-    {
-        if (line.substr(0,2) == "v ")
-        {
-            istringstream s(line.substr(2));
-            glm::vec4 v;
-            s >> v.x;
-            s >> v.y;
-            s >> v.z;
-            v.w = 1.0f;
-            vertices.push_back(v);
-        }
-        else if (line.substr(0,2) == "f ")
-        {
-            istringstream s(line.substr(2));
-
-            GLushort a,b,c, d;
-            char ch;
-            int n;
-            s >> a;
-            s >> ch;
-            s >>ch;
-            s >> n;
-            s >> b;
-            s >> ch;
-            s >>ch;
-            s >> n;
-            s >> c;
-            s >> ch;
-            s >>ch;
-            s >> n;
-            s >> d;
-            a--;
-            b--;
-            c--;
-            d--;
-            elements.push_back(a);
-            elements.push_back(b);
-            elements.push_back(c);
-            elements.push_back(a);
-            elements.push_back(c);
-            elements.push_back(d);
-        }
-    }
-    printf("Worked\n");
-
-}
-
-void load_obj2(const char* filename, vector<glm::vec4> &vertices, vector<GLushort> &elements)
-{
-    ifstream in(filename, ios::in);
-    if (!in)
-    {
-        cerr << "Não pode abrir o arquivo: " << filename << endl;
-        exit(1);
-    }
-
-    string line;
-    while (getline(in, line))
-    {
-        if (line.substr(0,2) == "v ")
-        {
-            istringstream s(line.substr(2));
-            glm::vec4 v;
-            s >> v.x;
-            s >> v.y;
-            s >> v.z;
-            v.w = 1.0f;
-            vertices.push_back(v);
-        }
-        else if (line.substr(0,2) == "f ")
-        {
-            istringstream s(line.substr(2));
-
-            GLushort a,b,c, d;
-            char ch;
-            int n;
-            s >> a;
-            s >> b;
-            s >> c;
-            a--;
-            b--;
-            c--;
-            elements.push_back(a);
-            elements.push_back(b);
-            elements.push_back(c);
-        }
-    }
-
-}
-
 void LoadTextureImage(const char* filename)
 {
     printf("Carregando imagem \"%s\"... ", filename);
@@ -1012,7 +911,9 @@ GLuint BuildCar()
     std::vector<float>  normal_coefficients;
     std::vector<float>  color_coefficients;
 
-    //ComputeNormals(&model);
+    model.attrib.normals.clear();
+
+    ComputeNormals(&model);
 
     for (size_t shape = 0; shape < model.shapes.size(); ++shape)
     {
