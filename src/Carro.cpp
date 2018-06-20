@@ -71,7 +71,7 @@ bool Carro::cruzouLimites(vector <glm::vec4> pontos)
             retorno =  true;
         }
         //Blocos internos
-        if(pontos[i][0]<5 && pontos[i][0]>-5 && pontos[i][2]<10 && pontos[i][2]>0)
+        if(pontos[i][0]<=5 && pontos[i][0]>=-5 && pontos[i][2]<=10 && pontos[i][2]>=0)
         {
             retorno = true;
         }
@@ -127,21 +127,21 @@ void Carro::turnRight()
     glm::mat4 rotation = matrix_rotate_y(-0.2);
     //if(!testeColisao(position,ahead*rotation) || Naoinicializado)
     //{
-        glm::mat4 translation = glm::mat4(
-                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    -position[0], -position[1], -position[2], 1.0f       // LINHA 4
-                                );
-        glm::mat4 translation2 = glm::mat4(
-                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                     0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                     position[0], position[1], position[2], 1.0f       // LINHA 4
-                                 );
+    glm::mat4 translation = glm::mat4(
+                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                -position[0], -position[1], -position[2], 1.0f       // LINHA 4
+                            );
+    glm::mat4 translation2 = glm::mat4(
+                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                 0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                 position[0], position[1], position[2], 1.0f       // LINHA 4
+                             );
 
-        matrix = translation2 * rotation * translation* matrix;
-        ahead = rotation * ahead;
+    matrix = translation2 * rotation * translation* matrix;
+    ahead = rotation * ahead;
     //}
 }
 
@@ -150,21 +150,21 @@ void Carro::turnLeft()
     glm::mat4 rotation = matrix_rotate_y(0.2);
     //if(!testeColisao(position, ahead*rotation))
     //{
-        glm::mat4 translation = glm::mat4(
-                                    1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                    0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                    0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                    -position[0], -position[1], -position[2], 1.0f       // LINHA 4
-                                );
-        glm::mat4 translation2 = glm::mat4(
-                                     1.0f, 0.0f, 0.0f, 0,      // LINHA 1
-                                     0.0f, 1.0f, 0.0f, 0,      // LINHA 2
-                                     0.0f, 0.0f, 1.0f, 0,      // LINHA 3
-                                     position[0], position[1], position[2], 1.0f       // LINHA 4
-                                 );
+    glm::mat4 translation = glm::mat4(
+                                1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                -position[0], -position[1], -position[2], 1.0f       // LINHA 4
+                            );
+    glm::mat4 translation2 = glm::mat4(
+                                 1.0f, 0.0f, 0.0f, 0,      // LINHA 1
+                                 0.0f, 1.0f, 0.0f, 0,      // LINHA 2
+                                 0.0f, 0.0f, 1.0f, 0,      // LINHA 3
+                                 position[0], position[1], position[2], 1.0f       // LINHA 4
+                             );
 
-        matrix = translation2 * rotation * translation* matrix;
-        ahead = rotation * ahead;
+    matrix = translation2 * rotation * translation* matrix;
+    ahead = rotation * ahead;
     //}
 }
 void Carro::moveCarBack()
@@ -182,6 +182,81 @@ void Carro::moveCarBack()
         position[3] = 1;
     }
 }
+
+bool Carro::cruzouChegada()
+{
+    vector <glm::vec4> pontos;
+    glm::vec4 vetor90graus = glm::vec4(ahead[2],ahead[1], ahead[0],0);
+
+    glm::vec4 vetorsuperiordir = ((comprimento/2)*ahead) + ((largura/2)*vetor90graus);
+    glm::vec4 vetorsuperioresq = ((comprimento/2)*ahead) + ((largura/2)*-vetor90graus);
+    glm::vec4 vetorinferiordir = ((comprimento/2)*-ahead) + ((largura/2)*vetor90graus);
+    glm::vec4 vetorinferioresq = ((comprimento/2)*-ahead) + ((largura/2)*-vetor90graus);
+
+    glm::vec4 pontosupdir = position+vetorsuperiordir;
+    glm::vec4 pontosupesq = position+vetorsuperioresq;
+    glm::vec4 pontoinfdir = position+vetorinferiordir;
+    glm::vec4 pontoinfesq = position+vetorinferioresq;
+
+    pontos.push_back(pontosupdir);
+    pontos.push_back(pontosupesq);
+    pontos.push_back(pontoinfdir);
+    pontos.push_back(pontoinfesq);
+
+    if(!estaoNaRetaFinal(pontos))
+    {
+        return false;
+    }
+
+    printf("Aq");
+    if(algumAntesDaChegada(pontos) && algumDepoisDaChegada(pontos))
+    {
+        return true;
+    }
+
+    return false;
+}
+bool Carro::estaoNaRetaFinal(vector <glm::vec4> pontos)
+{
+
+    for(int i=0; i < pontos.size(); i++)
+    {
+        if(pontos[i][2]>=10)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Carro::algumAntesDaChegada(vector <glm::vec4> pontos)
+{
+
+    for(int i=0; i < pontos.size(); i++)
+    {
+        if(pontos[i][0]>3)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Carro::algumDepoisDaChegada(vector <glm::vec4> pontos)
+{
+
+    for(int i=0; i < pontos.size(); i++)
+    {
+        if(pontos[i][0]<=3)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 glm::mat4 Carro::getMatrix()
 {

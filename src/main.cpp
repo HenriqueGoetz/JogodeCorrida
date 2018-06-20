@@ -349,9 +349,14 @@ int main()
     camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
     camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
 
-    while (!glfwWindowShouldClose(window))
+
+
+    double timeinicial = glfwGetTime();
+    bool venceu = false;
+    while (!glfwWindowShouldClose(window) && !venceu)
     {
-        if(camera_lookat){
+        if(camera_lookat)
+        {
             camera_position_c = car.getCameraPosition();
             camera_view_vector = car.getCameraView();
         }
@@ -423,8 +428,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = model
-            *Matrix_Translate(0,0.5,-9.5)
-            *Matrix_Scale(20,1,1);
+                *Matrix_Translate(0,0.5,-9.5)
+                *Matrix_Scale(20,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -437,11 +442,11 @@ int main()
         );
 
         /////////////
-         glBindVertexArray(vertex_array_object_id4);
+        glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(0,0.5,14.5)
-            *Matrix_Scale(20,1,1);
+                *Matrix_Translate(0,0.5,14.5)
+                *Matrix_Scale(20,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -454,11 +459,11 @@ int main()
         );
 
         /////////////
-         glBindVertexArray(vertex_array_object_id4);
+        glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(-9.5,0.5,5)
-            *Matrix_Scale(1,1,18);
+                *Matrix_Translate(-9.5,0.5,5)
+                *Matrix_Scale(1,1,18);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -475,8 +480,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(+9.5,0.5,5)
-            *Matrix_Scale(1,1,18);
+                *Matrix_Translate(+9.5,0.5,5)
+                *Matrix_Scale(1,1,18);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -494,8 +499,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(0,0.5,0.5)
-            *Matrix_Scale(10,1,1);
+                *Matrix_Translate(0,0.5,0.5)
+                *Matrix_Scale(10,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -512,8 +517,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(0,0.5,9.5)
-            *Matrix_Scale(10,1,1);
+                *Matrix_Translate(0,0.5,9.5)
+                *Matrix_Scale(10,1,1);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -529,8 +534,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(-4.5,0.5,5)
-            *Matrix_Scale(1,1,8);
+                *Matrix_Translate(-4.5,0.5,5)
+                *Matrix_Scale(1,1,8);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -546,8 +551,8 @@ int main()
         glBindVertexArray(vertex_array_object_id4);
 
         model = Matrix_Identity()
-            *Matrix_Translate(4.5,0.5,5)
-            *Matrix_Scale(1,1,8);
+                *Matrix_Translate(4.5,0.5,5)
+                *Matrix_Scale(1,1,8);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -563,7 +568,7 @@ int main()
         glBindVertexArray(vertex_array_object_id5);
 
         model = Matrix_Identity()
-            *Matrix_Translate(0,0.5,5);
+                *Matrix_Translate(0,0.5,5);
         glUniformMatrix4fv(model_uniform, 1, GL_FALSE, glm::value_ptr(model));
 
         glUniform1i(render_as_black_uniform, false);
@@ -587,6 +592,12 @@ int main()
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        if(car.cruzouChegada())
+        {
+            printf("\n\n ----FIM----\n Voce terminou a corrida em %d segundos.\n", glfwGetTime() - timeinicial);
+            venceu = true;
+        }
 
     }
 
@@ -712,7 +723,7 @@ GLuint BuildCubo()
 
     float normal_coefficients[]=
     {
-         // Vértices de um cubo
+        // Vértices de um cubo
         //    X      Y     Z     W
         -0.5f,  0.5f,  0.5f, 0, // posição do vértice 0
         -0.5f, -0.5f,  0.5f, 0, // posição do vértice 1
