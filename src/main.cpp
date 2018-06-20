@@ -18,6 +18,7 @@
 #include "Carro.h"
 #include <tiny_obj_loader.h>
 #include <stb_image.h>
+#include <time.h>
 
 using namespace std;
 
@@ -250,9 +251,10 @@ int main()
 
 
 
-    double timeinicial = glfwGetTime();
+    clock_t inicio = clock();
     bool venceu = false;
-    while (!glfwWindowShouldClose(window))
+
+    while (!glfwWindowShouldClose(window) && !venceu)
     {
         if(camera_lookat)
         {
@@ -494,11 +496,15 @@ int main()
 
         if(car.cruzouChegada())
         {
-            //printf("\n\n ----FIM----\n Voce terminou a corrida em %d segundos.\n", glfwGetTime() - timeinicial);
+            clock_t fim = clock();
+            printf("\n\n --------------------FIM---------------------\n Voce terminou a corrida em %1f segundos.\n", ( (double) (fim - inicio) ) / CLOCKS_PER_SEC);
             venceu = true;
         }
 
+
     }
+
+    getchar();
 
     glfwTerminate();
 

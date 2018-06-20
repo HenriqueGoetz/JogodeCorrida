@@ -401,7 +401,7 @@
 	<stddef.h>
 	<stdint.h>
 
-1529455794 source:c:\users\henrique goetz\desktop\jogodecorrida\src\main.cpp
+1529472873 source:c:\users\henrique goetz\desktop\jogodecorrida\src\main.cpp
 	<cmath>
 	<cstdio>
 	<cstdlib>
@@ -422,6 +422,7 @@
 	"Carro.h"
 	<tiny_obj_loader.h>
 	<stb_image.h>
+	<time.h>
 
 1529366512 c:\users\henrique goetz\desktop\jogodecorrida\include\glm\gtc\type_ptr.hpp
 	"../gtc/quaternion.hpp"
@@ -509,12 +510,12 @@
 1529366512 c:\users\henrique goetz\desktop\jogodecorrida\include\glm\matrix.hpp
 	"detail/func_matrix.hpp"
 
-1529455789 c:\users\henrique goetz\desktop\jogodecorrida\include\carro.h
+1529467531 c:\users\henrique goetz\desktop\jogodecorrida\include\carro.h
 	<glm/mat4x4.hpp>
 	<glm/vec4.hpp>
 	<vector>
 
-1529455789 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
+1529471298 source:c:\users\henrique goetz\desktop\jogodecorrida\src\carro.cpp
 	"Carro.h"
 	<GLFW/glfw3.h>
 	<glm/mat4x4.hpp>
@@ -1589,4 +1590,7 @@
 	<emmintrin.h>
 	<intrin.h>
 	<arm_neon.h>
+
+1529455794 source:c:\users\henrique goetz\desktop\jogodecorrida\src\stb_image.cpp
+	"stb_image.h"
 

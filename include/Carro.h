@@ -13,7 +13,7 @@ private:
     glm::mat4 matrix;
     float speed = 0.1f;
     float comprimento = 23.0f;
-    float largura = 11.0f;
+    float largura = 12.0f;
     double last_time;
     glm::vec4 ahead = glm::vec4(0.0,0.0,1.0,0.0);
     glm::vec4 position = glm::vec4(0.0,0.0,0.0,1.0);
