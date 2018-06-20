@@ -494,19 +494,24 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
 
+        clock_t now = clock();
+
         if(car.cruzouChegada())
         {
-            clock_t fim = clock();
+            clock_t fim = now;
             printf("\n\n --------------------FIM---------------------\n Voce terminou a corrida em %1f segundos.\n", ( (double) (fim - inicio) ) / CLOCKS_PER_SEC);
+            venceu = true;
+        }else if(((double) (now - inicio) ) / CLOCKS_PER_SEC > 35){
+            printf("\n\n --------------------FIM---------------------\n Voce perdeu a corrida\n", ( (double) (now - inicio) ) / CLOCKS_PER_SEC);
             venceu = true;
         }
 
 
     }
 
-    getchar();
-
     glfwTerminate();
+
+    getchar();
 
     return 0;
 }
