@@ -31,7 +31,7 @@ Carro::Carro()
                  1, 0, 0, 0,
                  0, 1, 0, 0,
                  0, 0, 1, 0,
-                 -4, 0, 0, 1
+                 -4, 0.2, 0, 1
              );
 
     position = position + glm::vec4(0,0,-2,0);
@@ -60,7 +60,7 @@ glm::mat4 matrix_rotate_y(float angle)
 
 bool Carro::cruzouLimites(vector <glm::vec4> pontos)
 {
-    bool retorno = false;
+
 
     for(int i = 0; i < pontos.size(); i++)
     {
@@ -68,18 +68,18 @@ bool Carro::cruzouLimites(vector <glm::vec4> pontos)
         //Blocos externos
         if(pontos[i][0]>=9 || pontos[i][0]<=-9 || pontos[i][2]>=14  || pontos[i][2]<=-4)
         {
-            printf("\n\tUltrapassaria bloco externo.");
-            retorno =  true;
+            //printf("\n\tUltrapassaria bloco externo.");
+            return true;
         }
         //Blocos internos
         if(pontos[i][0]<=5 && pontos[i][0]>=-5 && pontos[i][2]<=10 && pontos[i][2]>=0)
         {
-            printf("\n\tUltrapassaria bloco interno.");
-            retorno = true;
+            //printf("\n\tUltrapassaria bloco interno.");
+            return true;
         }
     }
 
-    return retorno;
+    return false;
 }
 
 bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
@@ -117,22 +117,40 @@ bool Carro::testeColisao(glm::vec4 position, glm::vec4 sentido)
     glm::vec4 ponto3 = position + vetorinferiordir*speed;
     glm::vec4 ponto4 = position + vetorinferioresq*speed;
 
-    printf("\n\tPosicao superior direita:  %f , %f", ponto1[0], ponto1[2]);
-    printf("\n\tPosicao superior esquerda: %f , %f", ponto2[0], ponto2[2]);
-    printf("\n\tPosicao inferior direita:  %f , %f", ponto3[0], ponto3[2]);
-    printf("\n\tPosicao inferior esquerda: %f , %f", ponto4[0], ponto4[2]);
+    //printf("\n\tPosicao superior direita:  %f , %f", ponto1[0], ponto1[2]);
+    //printf("\n\tPosicao superior esquerda: %f , %f", ponto2[0], ponto2[2]);
+    //printf("\n\tPosicao inferior direita:  %f , %f", ponto3[0], ponto3[2]);
+    //printf("\n\tPosicao inferior esquerda: %f , %f", ponto4[0], ponto4[2]);
 
     if(cruzouLimites(pontos))
     {
         //printf("Colidiu.\n");
         return true;
     }
+
+    if(trapaceou(pontos)){
+        return true;
+    }
+
+    return false;
+}
+
+bool Carro::trapaceou(vector <glm::vec4> pontos){
+
+    if(!estaoNaRetaFinal(pontos)){
+        return false;
+    }
+
+    if(algumDepoisDaSaida(pontos) && algumAntesDaSaida(pontos)){
+        return true;
+    }
+
     return false;
 }
 
 void Carro::moveCarro(double time)
 {
-    printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
+    //printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
     if(!testeColisao(position+(speed*ahead),ahead))
     {
         //printf("Moveu\n");
@@ -151,7 +169,7 @@ void Carro::moveCarro(double time)
 
 void Carro::turnRight()
 {
-     printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
+    //printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
     glm::mat4 rotation = matrix_rotate_y(-0.2);
     //if(!testeColisao(position,ahead*rotation) || Naoinicializado)
     //{
@@ -175,7 +193,7 @@ void Carro::turnRight()
 
 void Carro::turnLeft()
 {
-     printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
+    //printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
     glm::mat4 rotation = matrix_rotate_y(0.2);
     if(!testeColisao(position, ahead*rotation))
     {
@@ -198,7 +216,7 @@ void Carro::turnLeft()
 }
 void Carro::moveCarBack()
 {
-    printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
+    //printf("\n\t Posicao Atual: %f , %f",position[0], position[2]);
     if(!testeColisao(position-(ahead*speed), -ahead))
     {
         glm::mat4 translation = glm::mat4(
@@ -238,7 +256,6 @@ bool Carro::cruzouChegada()
         return false;
     }
 
-    printf("Aq\n");
     if(algumAntesDaChegada(pontos) && algumDepoisDaChegada(pontos))
     {
         return true;
@@ -287,6 +304,36 @@ bool Carro::algumDepoisDaChegada(vector <glm::vec4> pontos)
 
     return false;
 }
+
+bool Carro::algumAntesDaSaida(vector <glm::vec4> pontos)
+{
+
+    for(int i=0; i < pontos.size(); i++)
+    {
+        if(pontos[i][0]>=2)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Carro::algumDepoisDaSaida(vector <glm::vec4> pontos)
+{
+
+    for(int i=0; i < pontos.size(); i++)
+    {
+        //printf("\n\t%d - %f", i, pontos[i][0]);
+        if(pontos[i][0]<2)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 
 glm::mat4 Carro::getMatrix()

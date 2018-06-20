@@ -19,8 +19,11 @@ private:
     glm::vec4 position = glm::vec4(0.0,0.0,0.0,1.0);
     bool testeColisao(glm::vec4 position, glm::vec4 sentido);
     bool cruzouLimites(vector <glm::vec4> pontos);
+    bool trapaceou(vector <glm::vec4> pontos);
     bool algumAntesDaChegada(vector <glm::vec4> pontos);
     bool algumDepoisDaChegada(vector <glm::vec4> pontos);
+    bool algumAntesDaSaida(vector <glm::vec4> pontos);
+    bool algumDepoisDaSaida(vector <glm::vec4> pontos);
     bool estaoNaRetaFinal(vector <glm::vec4> pontos);
 
 public:
