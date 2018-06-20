@@ -39,6 +39,21 @@ void main()
     Kd = cor_interpolada_pelo_rasterizador;
     Ks = vec4(0.8,0.8,0.8,0);
     q = 32.0;
+    if(cor_interpolada_pelo_rasterizador == vec4(0.2,0.2,0.2,1.0)){
+        float minx = -9;
+        float maxx = 9;
+
+        float miny = 0.1;
+        float maxy = 0.1;
+
+        float minz = -4;
+        float maxz = 14;
+
+        float U =(p[0] -minx)/(maxx-minx);
+        float V =(p[2] -minz)/(maxz-minz);
+
+        Kd = texture(TextureImage, vec2(U,V)).rgba;
+    }
 
     vec4 lambert_diffuse_term = Kd*max(dot(n,l),0);
     vec4 phong_specular_term  = Ks*pow(max(dot(r,v),0),q); // PREENCH AQUI o termo especular de Phong
@@ -47,5 +62,4 @@ void main()
     color = pow(color, vec4(1.0,1.0,1.0,1.0)/2.2);
     //color = Kd;
     //color = n;
-    //color = texture(TextureImage, vec2(0,0.5)).rgba;
 }
